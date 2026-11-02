@@ -276,7 +276,7 @@
   </main>
 
   <footer>
-    <b>주최 · 미얀마 한인회 (Korean Association of Myanmar)</b><br>
+    <b>주최 · 미얀마 한인회 (Korean Association of Myanmar)</b> <span class="en" style="color:#B07A12">· 폼 v26.11.02-4</span><br>
     2026 한마음 큰 잔치 · HANMAUM ONE-HEART FESTIVAL 2026 — 문의는 신청자 연락처로 담당자가 드립니다.
   </footer>
 </div>
@@ -537,37 +537,26 @@ var SECRET = "hanmaum2026"; // Apps Script 코드의 SECRET과 똑같이 유지
     d.scrollIntoView({behavior:'smooth', block:'center'});
   }
 
-  document.getElementById('addAdult').addEventListener('click', function(){ addPerson('adult'); });
-  document.getElementById('addChild').addEventListener('click', function(){ addPerson('child', 8); });
-  document.getElementById('addFriend').addEventListener('click', function(){ addPerson('friend'); });
-
-  document.getElementById('copyBtn').addEventListener('click', function(){
-    var t = document.getElementById('fbText').textContent;
-    var btn = this;
-    function ok(){ btn.textContent='복사 완료 ✓'; setTimeout(function(){ btn.textContent='내용 복사'; }, 1800); }
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(t).then(ok, function(){ legacy(); });
-    } else legacy();
-    function legacy(){
-      var ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta);
-      ta.select(); try{ document.execCommand('copy'); ok(); }catch(e){ alert('복사에 실패했습니다. 텍스트를 직접 선택해 복사해 주세요.'); }
-      document.body.removeChild(ta);
-    }
-  });
-
-  document.getElementById('closeFb').addEventListener('click', function(){
-    document.getElementById('fallback').style.display='none';
-  });
-
-  document.getElementById('sheetCopyBtn').addEventListener('click', function(){
-    var t = document.getElementById('sheetRowText').textContent, btn = this;
-    function ok(){ btn.textContent='복사 완료 ✓'; setTimeout(function(){ btn.textContent='시트용 내용 복사'; }, 1800); }
-    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, legacy);
-    else legacy();
-    function legacy(){
-      var ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta);
-      ta.select(); try{ document.execCommand('copy'); ok(); }catch(e){ alert('복사에 실패했습니다. 텍스트를 직접 선택해 복사해 주세요.'); }
-      document.body.removeChild(ta);
+  /* 버튼 클릭 — 이벤트 위임 방식 (문서 하나에서 모든 버튼을 처리해 유실에 강함) */
+  document.addEventListener('click', function(ev){
+    var id = ev.target && ev.target.id ? ev.target.id : '';
+    if(id === 'addAdult') addPerson('adult');
+    else if(id === 'addChild') addPerson('child', 8);
+    else if(id === 'addFriend') addPerson('friend');
+    else if(id === 'closeFb'){ document.getElementById('fallback').style.display='none'; }
+    else if(id === 'copyBtn' || id === 'sheetCopyBtn'){
+      var isSheet = (id === 'sheetCopyBtn');
+      var t = document.getElementById(isSheet ? 'sheetRowText' : 'fbText').textContent;
+      var btn = document.getElementById(id);
+      var label = isSheet ? '시트용 내용 복사' : '내용 복사';
+      function ok(){ btn.textContent='복사 완료 ✓'; setTimeout(function(){ btn.textContent=label; }, 1800); }
+      function legacy(){
+        var ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta);
+        ta.select(); try{ document.execCommand('copy'); ok(); }catch(e){ alert('복사에 실패했습니다. 텍스트를 직접 선택해 복사해 주세요.'); }
+        document.body.removeChild(ta);
+      }
+      if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, legacy);
+      else legacy();
     }
   });
 
