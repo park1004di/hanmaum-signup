@@ -374,6 +374,44 @@ function autoAssign(newOnly){
     g.team = team;
     g.members.forEach(function(m){ add(sum[team], m); });
   });
+  // ── 최종 균형 패스: 청/백 인원을 정확히(가능한 한) 맞춤 ──
+  var diff = sum.b.total - sum.w.total;
+  if(diff !== 0){
+    var over = diff > 0 ? 'b' : 'w', under = over==='b' ? 'w' : 'b';
+    var want = Math.abs(diff) / 2;                       // 이만한 크기의 가족을 과다 쪽에서 이동
+    var overFams = targets.filter(function(g){ return g.team===over; });
+    // 1) 정확히 want 크기인 가족 찾기 (want가 정수일 때)
+    if(Number.isInteger(want)){
+      var exact = overFams.find(function(g){ return g.members.length === want; });
+      if(exact){
+        exact.team = under;
+        exact.members.forEach(function(m){ sub_(sum[over], m); add_(sum[under], m); });
+        diff = sum.b.total - sum.w.total;
+      }
+    }
+    // 2) 두 가족 교차 스왑 (over의 큰 것 ↔ under의 작은 것)
+    if(diff !== 0){
+      var underFams = targets.filter(function(g){ return g.team===under; });
+      outer:
+      for(var a=0; a<overFams.length; a++){
+        for(var c=0; c<underFams.length; c++){
+          var d1 = overFams[a].members.length, d2 = underFams[c].members.length;
+          var cur = Math.abs(sum.b.total - sum.w.total);
+          // swap 시뮬레이션
+          var newDiff = Math.abs((sum.b.total - sum.w.total) + (over==='b' ? -2*d1 + 2*d2 : 2*d1 - 2*d2));
+          if(newDiff < cur){
+            overFams[a].team = under; underFams[c].team = over;
+            overFams[a].members.forEach(function(m){ sub_(sum[over], m); add_(sum[under], m); });
+            underFams[c].members.forEach(function(m){ sub_(sum[under], m); add_(sum[over], m); });
+            if(sum.b.total === sum.w.total) break outer;
+            break;
+          }
+        }
+      }
+    }
+  }
+  function add_(v, m){ var k = (m.age===null)?'adult':band(m.age).key; v[k]++; v.total++; if(m.gender==='m') v.male++; else if(m.gender==='f') v.female++; }
+  function sub_(v, m){ var k = (m.age===null)?'adult':band(m.age).key; v[k]--; v.total--; if(m.gender==='m') v.male--; else if(m.gender==='f') v.female--; }
 }
 
 var rosters, sideCnt, gameCount;
@@ -686,91 +724,60 @@ function assignGames(mode){
     GAMES.forEach(function(g, gi){
       var rs = rosters[gi];
       if(!rs || !rs.length) return;
+      function numSquad(list, prefix, size){
+        list.forEach(function(x, i2){
+          x.squad = prefix + (Math.floor(i2/size)+1) + '조';
+        });
+      }
       if(g.name.indexOf('기마전') > -1){
-        // 기마전: 어른 3인 1조(청A·청B… 백A·백B…), 어린이 탑은 개인별
         var cb = rs.filter(function(x){ return x.team==='b' && !x.p.isKid; });
         var cw = rs.filter(function(x){ return x.team==='w' && !x.p.isKid; });
-        cb.forEach(function(x, i2){ x.squad = '청' + String.fromCharCode(65 + Math.floor(i2/3)) + '조'; });
-        cw.forEach(function(x, i2){ x.squad = '백' + String.fromCharCode(65 + Math.floor(i2/3)) + '조'; });
-        rs.forEach(function(x){ if(x.p.isKid) x.squad = (x.team==='b'?'청':'백') + '탑'; });
-      } else if(g.name.indexOf('사람 찾기') > -1){
-        // 2인 3각: 어른끼리 2인 1조, 어린이끼리 2인 1조 (각 팀별)
+        numSquad(cb, '청팀', 3); numSquad(cw, '백팀', 3);
+        rs.forEach(function(x){ if(x.p.isKid) x.squad = (x.team==='b'?'청팀':'백팀') + '탑'; });
+      } else if(g.name.indexOf('사람 찾기') > -1 || g.name.indexOf('2인 3각') > -1){
         ['b','w'].forEach(function(team){
-          var tn = team==='b' ? '청' : '백';
+          var tn = team==='b' ? '청팀' : '백팀';
           var kk2 = rs.filter(function(x){ return x.team===team && x.p.isKid; });
           var aa2 = rs.filter(function(x){ return x.team===team && !x.p.isKid; });
-          var ks = Math.ceil(kk2.length/2), as = Math.ceil(aa2.length/2);
-          kk2.forEach(function(x, i2){
-            var idx2 = Math.floor(i2/2);
-            x.squad = tn + '어린이' + String.fromCharCode(65 + idx2) + '조';
-          });
-          aa2.forEach(function(x, i2){
-            var idx3 = Math.floor(i2/2);
-            x.squad = tn + '어른' + String.fromCharCode(65 + idx3) + '조';
-          });
+          numSquad(kk2, tn+'어린이', 2);
+          numSquad(aa2, tn+'어른', 2);
         });
       } else {
-        // 나머지 squad 경기(부활피구·쌀가마니·장애물·줄다리기): 청/백 단일 조
-        rs.forEach(function(x){ x.squad = (x.team==='b'?'청':'백'); });
+        rs.forEach(function(x){ x.squad = (x.team==='b'?'청팀':'백팀'); });
       }
     });
   }
   assignSquads();
   assignSquads();
+  assignSquads();
 
-  // 쌀가마니 팀 균형 보정 (남자 한정, 가족 단위 한도)
-  (function(){
-    var hi = 4;
-    var rs = rosters[hi]; if(!rs || !rs.length) return;
+  // ── 전 경기 공통 팀 균형 보정 (정원 경기 전부 — 청/백 최대한 동일) ──
+  GAMES.forEach(function(g, gi){
+    if(g.quota === 0) return;
+    var rs = rosters[gi]; if(!rs || !rs.length) return;
+    var per = g.quota / 2;
     function rc(){ return {
       b: rs.filter(function(x){ return x.team==='b'; }).length,
       w: rs.filter(function(x){ return x.team==='w'; }).length }; }
-    var c4 = rc(); var guard = 0;
-    while(Math.abs(c4.b - c4.w) >= 2 && guard < 30){
+    var c = rc(); var guard = 0;
+    while(c.b !== c.w && guard < 40){
       guard++;
-      var over = c4.b > c4.w ? 'b' : 'w';
-      var under3 = over==='b' ? 'w' : 'b';
+      var over = c.b > c.w ? 'b' : 'w';
+      var under = over==='b' ? 'w' : 'b';
       var moved = false;
-      for(var k4=0; k4<rs.length; k4++){
-        var x = rs[k4];
+      // 1인 이동 (가족 분열 회피: 가족이 과다 쪽에 2명 이상일 때만)
+      for(var k2=0; k2<rs.length; k2++){
+        var x = rs[k2];
         if(x.team !== over) continue;
-        var famInUnder = rs.filter(function(y){ return y.p.gid===x.p.gid && y.team===under3; }).length;
-        if(famInUnder > 0) continue;
-        var famInOver = rs.filter(function(y){ return y.p.gid===x.p.gid && y.team===over; }).length;
-        if(famInOver < 2) continue;
-        x.team = under3; c4 = rc(); moved = true; break;
+        var famOver = rs.filter(function(y){ return y.p.gid===x.p.gid && y.team===over; }).length;
+        var famUnder = rs.filter(function(y){ return y.p.gid===x.p.gid && y.team===under; }).length;
+        if(famUnder > 0) continue;       // 가족 분열 방지
+        if(famOver < 2) continue;         // 혼자 남는 가족원 방지
+        x.team = under; c = rc(); moved = true; break;
       }
       if(!moved) break;
     }
-  })();
-
-  // 기마전 팀 균형 보정 (가족 단위 한도 내에서 1인 이동)
-  (function(){
-    var hi = 1; // 기마전 인덱스
-    var rs = rosters[hi]; if(!rs || !rs.length) return;
-    var per = GAMES[hi].quota / 2;
-    function rc(){ return {
-      b: rs.filter(function(x){ return x.team==='b'; }).length,
-      w: rs.filter(function(x){ return x.team==='w'; }).length }; }
-    var c3 = rc(); var guard = 0;
-    while(Math.abs(c3.b - c3.w) >= 2 && guard < 30){
-      guard++;
-      var over = c3.b > c3.w ? 'b' : 'w';
-      var under3 = over==='b' ? 'w' : 'b';
-      var moved = false;
-      for(var k3=0; k3<rs.length; k3++){
-        var x = rs[k3];
-        if(x.team !== over) continue;
-        var famInOver = rs.filter(function(y){ return y.p.gid===x.p.gid && y.team===over; }).length;
-        var famInUnder = rs.filter(function(y){ return y.p.gid===x.p.gid && y.team===under3; }).length;
-        if(famInUnder > 0) continue;
-        if(famInOver < 2) continue; // 혼자 남는 가족원은 이동 안 함
-        x.team = under3; c3 = rc(); moved = true; break;
-      }
-      if(!moved) break;
-    }
-  })();
-
+  });
   groups.forEach(function(g){ assignedGids[g.gid] = true; });
   return ppl;
 }
@@ -948,7 +955,13 @@ function renderGames(){
         ' · 청 '+sideCnt[gi].b+' vs 백 '+sideCnt[gi].w+'</span></div>';
       if(n){
         html += '<div class="gbody"><table class="gtable">';
-        rosters[gi].forEach(function(r){
+        var sorted = rosters[gi].slice().sort(function(a2,b2){
+          if(a2.team !== b2.team) return a2.team==='b' ? -1 : 1;   // 청팀 먼저
+          var sa2 = a2.squad||'', sb2 = b2.squad||'';
+          if(sa2 !== sb2) return sa2 < sb2 ? -1 : 1;
+          return a2.idx - b2.idx;
+        });
+        sorted.forEach(function(r){
           var m = r.p.m, bd = m.age===null?{label:'나이확인',cls:'teen'}:band(m.age);
           var gp2 = m.gender==='m' ? ' <span class="pill" style="background:#E4EEFB;color:#174a8c">남</span>' : (m.gender==='f' ? ' <span class="pill" style="background:#FBE4E1;color:#B33021">여</span>' : '');
           var sq = r.squad ? ' <span class="pchip" style="background:#FFF">'+esc(r.squad)+'</span>' : '';
@@ -1216,7 +1229,13 @@ function gameExportText(){
     if(isAllGame(gi)){ L.push('  · 신청자 전원 참가'); L.push(''); return; }
     var n = rosters[gi].length;
     if(!n){ L.push('  · 배정 0명 — 전원 현장 모집'); L.push(''); return; }
-    rosters[gi].forEach(function(r){
+    var sorted = rosters[gi].slice().sort(function(a2,b2){
+      if(a2.team !== b2.team) return a2.team==='b' ? -1 : 1;
+      var sa2 = a2.squad||'', sb2 = b2.squad||'';
+      if(sa2 !== sb2) return sa2 < sb2 ? -1 : 1;
+      return a2.idx - b2.idx;
+    });
+    sorted.forEach(function(r){
       var m = r.p.m;
       var sq = r.squad ? ' · '+r.squad : '';
       L.push('  '+(r.team==='b'?'[청]':'[백]')+' '+m.name+' ('+(m.gender==='m'?'남':m.gender==='f'?'여':'성별?')+', '+(m.age===null?'나이확인':band(m.age).label)+')'+sq);
