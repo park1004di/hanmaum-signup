@@ -237,7 +237,8 @@ $('saveBtn').addEventListener('click', async function(){
   if(errs.length){ st.innerHTML = '<span class="bad">확인해 주세요 — ' + esc(errs.join(' · ')) + '</span>'; return; }
   var kids = people.filter(function(p){ return p.age!==null && p.age<=12; }).length;
   var adults = people.length - kids;
-  if(kids > adults){ st.innerHTML = '<span class="bad">어린이 1인당 보호자 어른 1명이 필요합니다 (어린이 ' + kids + '명 → 어른 최소 ' + kids + '명)</span>'; return; }
+  if(adults === 0 && kids > 0){ st.innerHTML = '<span class="bad">어린이는 반드시 보호자 어른과 함께 등록해야 합니다.</span>'; return; }
+  if(adults > 0 && kids > adults * 3){ st.innerHTML = '<span class="bad">어른 1명당 어린이 최대 3명입니다 — 어린이 ' + kids + '명이면 어른 최소 ' + Math.ceil(kids/3) + '명이 필요합니다.</span>'; return; }
   if(!SHEET_URL || SHEET_URL.indexOf('script.google') < 0){ st.innerHTML = '<span class="bad">수정 기능이 아직 연결 전입니다.</span>'; return; }
 
   var btn = $('saveBtn'); btn.disabled = true; btn.textContent = '저장 중…';

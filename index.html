@@ -160,7 +160,7 @@
 
   <section class="notices" aria-label="참가 안내">
     <div class="notice n-blue"><b>청팀 vs 백팀 · 자동 배정</b><p>나이대 균형에 맞춰 자동 배정됩니다. 같이 온 가족·친구는 반드시 같은 팀입니다.</p></div>
-    <div class="notice n-red"><b>어린이 보호자 동반 필수</b><p>어린이(12세 이하) 1인당 보호자 어른 1명이 함께해야 합니다.</p></div>
+    <div class="notice n-red"><b>어린이 보호자 동반 필수</b><p>어른 1명당 어린이 최대 3명까지 동반 가능합니다. (어린이 단독 신청은 불가)</p></div>
     <div class="notice n-green"><b>티셔츠 전원 증정</b><p>이름을 새긴 기념 티셔츠 — 신청 시 사이즈를 선택해 주세요.</p></div>
     <div class="notice"><b>행운권 통합 추첨</b><p>입장 1장 + 경기 참가 시 1장. 경품 추첨은 한인회비 납부자에 한합니다.</p></div>
   </section>
@@ -436,7 +436,8 @@ var SECRET = "hanmaum2026"; // Apps Script 코드의 SECRET과 똑같이 유지
     });
 
     var c = counts();
-    if(c.k > c.a) errs.push('어린이 1인당 보호자 어른 1명이 필요합니다 — 어린이 '+c.k+'명이면 어른도 최소 '+c.k+'명 함께해야 합니다.');
+    if(c.a > 0 && c.k > c.a * 3) errs.push('어른 1명당 어린이 최대 3명까지입니다 — 어린이 '+c.k+'명이면 어른도 최소 '+Math.ceil(c.k/3)+'명 함께해야 합니다.');
+    if(c.a === 0 && c.k > 0) errs.push('어린이는 반드시 보호자 어른과 함께 신청해 주세요.');
     if(c.a + c.k < 1) errs.push('참가자를 1명 이상 등록해 주세요.');
 
     var consent=document.getElementById('consent');
