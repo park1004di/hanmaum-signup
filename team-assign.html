@@ -631,7 +631,7 @@ function renderGames(){
 function runTeamFull(){
   var raw = $('rawInput').value;
   if(!raw.trim()){ $('status').innerHTML = '<span class="bad">먼저 신청 내용을 붙여넣어 주세요.</span>'; return; }
-  var r = parseInput(raw);
+  var r = parseAny(raw);
   groups = r.groups;
   groups.forEach(function(g){ g.team = null; });
   autoAssign(null);
