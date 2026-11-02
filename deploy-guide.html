@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>신청폼 깃허브 배포 가이드 · 5분 설정</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;700&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#FBF4E6;color:#101E38;font-family:'Noto Sans KR',sans-serif;font-size:16px;line-height:1.7}
+  .obang{height:8px;display:flex}.obang span{flex:1}
+  .wrap{max-width:720px;margin:0 auto;padding:40px 20px 70px}
+  .en{font-family:'Barlow',sans-serif}
+  h1{font-size:30px;font-weight:900;margin:18px 0 6px}
+  .sub{color:#3A4A68;margin:0 0 30px}
+  .step{background:#fff;border:1px solid rgba(16,30,56,.14);border-radius:14px;padding:20px 22px;margin-bottom:14px;border-left:6px solid #1F5AA8}
+  .step h2{margin:0 0 8px;font-size:18px;font-weight:900;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .step h2 .n{font-family:'Barlow',sans-serif;color:#D8402F;font-size:14px;letter-spacing:.1em}
+  .step p{margin:6px 0;font-size:15px;color:#3A4A68}
+  .step a{color:#174a8c;font-weight:700}
+  code{background:#F6EED9;border-radius:6px;padding:2px 7px;font-size:13.5px;font-family:Menlo,Consolas,monospace;color:#7A4B06;word-break:break-all}
+  .important{border-left-color:#D8402F}
+  .important h2 .n{color:#D8402F}
+  .qa{background:#101E38;color:#FBF4E6;border-radius:14px;padding:22px 24px;margin-top:26px}
+  .qa h2{margin:0 0 12px;font-size:17px;color:#E8A72B}
+  .qa p{margin:8px 0;font-size:14.5px;color:#D7E1F2}
+  .qa b{color:#fff}
+</style>
+</head>
+<body>
+<div class="obang"><span style="background:#D8402F"></span><span style="background:#1F5AA8"></span><span style="background:#E8A72B"></span><span style="background:#2E7D5B"></span><span style="background:#FBF4E6"></span></div>
+<div class="wrap">
+  <p class="en" style="color:#D8402F;font-weight:700;letter-spacing:.24em;font-size:12.5px;margin:0">DEPLOY GUIDE · GITHUB PAGES</p>
+  <h1>신청폼 깃허브 배포 가이드</h1>
+  <p class="sub">컴퓨터 지식이 없어도 5분이면 됩니다. 파일은 <b>index.html 한 개</b>뿐이고, 전부 무료입니다.</p>
+
+  <div class="step"><h2><span class="n">STEP 0</span> 깃허브 계정 만들기 (처음이면)</h2>
+    <p><a href="https://github.com/signup">github.com/signup</a> 접속 → 이메일 입력 → 비밀번호(영문+숫자 8자 이상) → <b>사용자 이름(Username)</b> 결정 → 이메일 인증</p>
+    <p>⚠︎ 이 사용자 이름이 그대로 웹 주소가 됩니다: <code>https://사용자이름.github.io/…</code> — 되도록 짧고 단순하게 (예: <code>hanmaum-myanmar</code>)</p></div>
+
+  <div class="step"><h2><span class="n">STEP 1</span> 저장소(보관함) 만들기</h2>
+    <p>로그인 후 오른쪽 위 <b>+</b> → <b>New repository</b></p>
+    <p>Repository name: <code>hanmaum-signup</code> · <b>Public</b> 선택 → <b>Create repository</b></p></div>
+
+  <div class="step"><h2><span class="n">STEP 2</span> index.html 업로드</h2>
+    <p>저장소 화면의 <b>"uploading an existing file"</b> 링크 클릭 → <code>index.html</code> 파일을 끌어다 놓기 → <b>Commit changes</b> 클릭</p></div>
+
+  <div class="step"><h2><span class="n">STEP 3</span> 웹사이트 켜기 (Pages)</h2>
+    <p>저장소의 <b>Settings</b> → 왼쪽 메뉴 <b>Pages</b></p>
+    <p>Source: <b>Deploy from a branch</b> · Branch: <b>main</b> / <b>/(root)</b> → <b>Save</b></p>
+    <p>1~2분 뒤 주소가 생깁니다: <code>https://본인깃허브아이디.github.io/hanmaum-signup/</code></p></div>
+
+  <div class="step important"><h2><span class="n">STEP 4</span> 신청 데이터를 구글 시트로 자동 적재 (권장)</h2>
+    <p>접수 대장 시트는 이미 만들어져 있고, Apps Script를 5분 만에 연결하는 별도 가이드를 준비했습니다.</p>
+    <p>→ <a href="sheet-connect.html"><b>구글 시트 자동 적재 연결 가이드 열기</b></a></p>
+    <p>연결하면 신청 1건이 <b>시트에 한 줄씩 자동 기록</b>됩니다(접수번호·인원·티셔츠 사이즈 포함). <b>팀 배정 대시보드</b>(team-assign.html)에도 신청 내용을 그대로 붙여넣어 배정표를 만들 수 있습니다.</p></div>
+
+  <div class="step"><h2><span class="n">STEP 5</span> 이메일로 받는 대안 (선택)</h2>
+    <p>시트 연결 대신(또는 추가로) 이메일 수신도 가능합니다 — index.html의 <code>var OWNER_EMAIL = "";</code>에 이메일을 넣고, 첫 테스트 신청 때 오는 FormSubmit 확인 메일의 <b>Activate</b> 버튼을 한 번 누르면 됩니다.</p></div>
+
+  <div class="step"><h2><span class="n">STEP 6</span> 연결 전에도 신청은 받을 수 있습니다</h2>
+    <p>이메일·시트 연결 전에는 신청자에게 <b>"내용 복사"</b> 버튼이 나타납니다 — 복사한 내용을 Viber·메신저로 보내주는 방식이라, 연결 전에도 링크를 공유해 신청을 받을 수 있습니다.</p></div>
+
+  <div class="step"><h2><span class="n">STEP 7</span> 같이 올리면 좋은 파일들</h2>
+    <p><code>team-assign.html</code>(팀·게임 자동 배정, 운영자용) · <code>sheet-connect.html</code>(시트 연결 가이드) · <code>edit.html</code>(신청 내용 수정 페이지)을 같은 저장소에 올리면 주소 뒤에 파일명만 붙여 접속됩니다. 운영자 도구는 주소를 <b>담당자끼리만 공유</b>하세요.</p></div>
+
+  <div class="step"><h2><span class="n">STEP 8</span> 공유</h2>
+    <p>생성된 주소를 Viber·카페·포스터 QR에 그대로 공유하면 끝. 수정할 때는 저장소에서 <code>index.html</code>을 클릭 → 연필 아이콘 → 고치고 <b>Commit</b>하면 즉시 반영됩니다.</p></div>
+
+  <div class="qa">
+    <h2>자주 묻는 질문</h2>
+    <p><b>신청자도 깃허브 계정이 필요한가요?</b> — 아닙니다. 링크만 열면 바로 신청합니다(로그인·설치 없음). 계정은 주최측 관리용으로만 씁니다.</p>
+    <p><b>비용은?</b> — GitHub Pages·Google Apps Script·시트 모두 무료입니다.</p>
+    <p><b>접수 현황은 어디서?</b> — 시트 연결 시 '신청 접수 대장' 시트에서, 이메일 수신 시 메일함에서 확인합니다.</p>
+    <p><b>미얀마에서 구글폼이 안 되는데?</b> — 이 페이지는 깃허브 호스팅이라 구글과 무관하게 접속되고, 시트 기록은 주최측(대한측) 연결 작업이라 신청자는 구글에 접속할 필요가 없습니다.</p>
+  </div>
+</div>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>

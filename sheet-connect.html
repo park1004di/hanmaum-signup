@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>구글 시트 자동 적재 연결 가이드 · 신청 데이터가 시트로</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;700&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#FBF4E6;color:#101E38;font-family:'Noto Sans KR',sans-serif;font-size:16px;line-height:1.7}
+  .obang{height:8px;display:flex}.obang span{flex:1}
+  .wrap{max-width:760px;margin:0 auto;padding:40px 20px 70px}
+  .en{font-family:'Barlow',sans-serif}
+  h1{font-size:29px;font-weight:900;margin:18px 0 6px}
+  .sub{color:#3A4A68;margin:0 0 26px}
+  .step{background:#fff;border:1px solid rgba(16,30,56,.14);border-radius:14px;padding:20px 22px;margin-bottom:14px;border-left:6px solid #1F7A55}
+  .step h2{margin:0 0 8px;font-size:18px;font-weight:900;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .step h2 .n{font-family:'Barlow',sans-serif;color:#1F7A55;font-size:14px;letter-spacing:.1em}
+  .step p{margin:6px 0;font-size:15px;color:#3A4A68}
+  .step a{color:#174a8c;font-weight:700}
+  code{background:#F6EED9;border-radius:6px;padding:2px 7px;font-size:13.5px;font-family:Menlo,Consolas,monospace;color:#7A4B06;word-break:break-all}
+  pre{background:#101E38;color:#E8F0FF;border-radius:12px;padding:16px;font-size:12.5px;line-height:1.6;
+    white-space:pre-wrap;word-break:keep-all;max-height:340px;overflow:auto}
+  .copybtn{border:0;border-radius:10px;padding:11px 18px;font:inherit;font-weight:900;cursor:pointer;background:#1F5AA8;color:#fff;margin-bottom:10px}
+  .copybtn:hover{background:#174a8c}
+  .qa{background:#101E38;color:#FBF4E6;border-radius:14px;padding:22px 24px;margin-top:26px}
+  .qa h2{margin:0 0 12px;font-size:17px;color:#E8A72B}
+  .qa p{margin:8px 0;font-size:14.5px;color:#D7E1F2}
+  .qa b{color:#fff}
+  .note{background:#FDF3F1;border:1.5px dashed #C0362A;border-radius:12px;padding:12px 16px;font-size:13.5px;color:#C0362A;font-weight:700;margin:14px 0}
+</style>
+</head>
+<body>
+<div class="obang"><span style="background:#D8402F"></span><span style="background:#1F5AA8"></span><span style="background:#E8A72B"></span><span style="background:#2E7D5B"></span><span style="background:#FBF4E6"></span></div>
+<div class="wrap">
+  <p class="en" style="color:#1F7A55;font-weight:700;letter-spacing:.24em;font-size:12.5px;margin:0">SHEET CONNECT · 구글 시트 자동 적재</p>
+  <h1>신청이 구글 시트로 자동으로 쌓이게 하기</h1>
+  <p class="sub">무료(Google Apps Script)이고, 설정은 딱 한 번 — 아래 순서대로 5분이면 됩니다.</p>
+
+  <div class="step"><h2><span class="n">STEP 1</span> 접수 대장 시트는 이미 만들어 두었습니다</h2>
+    <p>아래 링크를 열어 확인하세요 — 헤더 13칸(접수일시 · 접수번호 · 신청자 · 이메일 · 연락처 · 어른 · 어린이 · 합계 · 한인회비 · 참가자 명단 · 비밀번호(해시) · 참가자데이터 · 수정일시)이 준비되어 있습니다.</p>
+    <p><a href="https://docs.google.com/spreadsheets/d/1y5bnVssN8yRlyNU-rqP6gkJjKJhRYJlYoh-UTEtlNxM/edit" target="_blank">↗ 2026 한마음 큰 잔치 — 신청 접수 대장 열기</a></p></div>
+
+  <div class="step"><h2><span class="n">STEP 2</span> 시트 화면에서 Apps Script 열기</h2>
+    <p>위 시트에서 메뉴 <b>확장 프로그램(Extensions) → Apps Script</b>를 클릭합니다. (스크립트 화면이 새 탭에서 열립니다)</p></div>
+
+  <div class="step"><h2><span class="n">STEP 3</span> 아래 코드 전체를 붙여넣기</h2>
+    <p>기본으로 적혀 있는 <code>function myFunction() { }</code> 등을 지우고, 아래 코드를 <b>통째로</b> 붙여넣은 뒤 저장(💾)하세요. 시트 ID는 이미 채워져 있습니다.</p>
+    <button class="copybtn" id="copyGs">코드 전체 복사</button>
+    <pre id="gscode"></pre></div>
+
+  <div class="step"><h2><span class="n">STEP 4</span> 배포 → 웹 앱</h2>
+    <p>오른쪽 위 <b>배포 → 새 배포</b> → 톱니바퀴 아이콘에서 <b>웹 앱</b> 선택</p>
+    <p>· <b>다음 계정으로 실행</b>: 나 (본인 계정)<br>
+       · <b>액세스 권한이 있는 사용자</b>: <b>모든 사용자</b> ← 중요!</p>
+    <p><b>배포</b> 클릭 → 처음 한 번 본인 계정 승인(「고급 → 이동(안전하지 않음)」이 나와도 본인이 만든 앱이라 안전) →
+    <b>웹 앱 URL</b>(…/exec 로 끝남)을 복사</p></div>
+
+  <div class="step"><h2><span class="n">STEP 5</span> 신청폼에 URL 붙여넣기</h2>
+    <p><code>index.html</code>을 열어 이 한 줄을 찾고 (위쪽에 있습니다):</p>
+    <p><code>var SHEET_URL = "";</code></p>
+    <p>복사한 웹 앱 URL을 넣어 저장(커밋)합니다:</p>
+    <p><code>var SHEET_URL = "https://script.google.com/macros/s/AKfy…/exec";</code></p></div>
+
+  <div class="step"><h2><span class="n">STEP 6</span> 접수 확인 메일 + 수정 페이지 켜기</h2>
+    <p>같은 폴더의 <code>edit.html</code>(수정 페이지)을 신청폼과 같은 저장소에 함께 올리고:</p>
+    <p>· <code>index.html</code> — <code>var SHEET_URL</code>에 웹 앱 URL (이메일 주소·비밀번호 필드는 이미 있음)<br>
+       · <code>edit.html</code> — 상단 <code>var SHEET_URL</code>에 같은 URL</p>
+    <p>그러면 신청하신 분에게 <b>접수 확인 메일이 자동 발송</b>됩니다 — 접수번호·인원·명단과 함께
+    <b>비밀번호와 수정 페이지 링크</b>가 들어가고, 신청자는 그 메일의 주소로 <b>이메일+비밀번호 로그인 후 본인 신청을 직접 수정</b>합니다
+    (이름·나이·티셔츠 사이즈 · 수정 시 시트에 수정일시가 기록됩니다).</p>
+    <p>※ 개인 Gmail 기준 하루 약 100통 무료 발송 한도 — 초과해도 <b>시트 기록은 항상 유지</b>되고, 워크스페이스 계정이면 한도가 더 넓습니다.</p></div>
+
+  <div class="step"><h2><span class="n">STEP 6-확인</span> 테스트</h2>
+    <p>신청폼에서 실제로 1건 신청 → 완료 화면의 <b>접수번호</b>와 시트에 쌓인 행의 접수번호가 같은지 확인하세요. 이후 신청은 전부 자동 적재됩니다.</p></div>
+
+  <div class="step"><h2><span class="n">STEP 7 (선택)</span> 신청자가 시트에 직접 붙여넣게 하기 — 전달 단계 생략</h2>
+    <p>Apps Script 연결 없이 운영하려면: 시트에서 <b>공유 → 일반 액세스 "링크가 있는 모든 사용자 · 편집자"</b>로 바꾸고, 그 링크를 <code>index.html</code>의 <code>var SHEET_LINK = "";</code>에 넣으세요.</p>
+    <p>그러면 신청 완료 화면에 <b>"시트용 내용 복사" 버튼 + "접수 대장 시트 열기"</b>가 나타나, 신청자가 <b>스스로 대장에 한 줄을 붙여넣습니다</b> — Viber로 보낼 필요가 없어집니다. (붙여넣기 형식은 대장 헤더와 같은 13칸)</p>
+    <p>단, 편집자 공유는 누구나 지울 수도 있으니 <b>주 1회 파일 → 사본 만들기</b>로 백업하고, 가능하면 위의 자동 적재(STEP 2~6)와 함께 쓰세요.</p></div>
+
+  <div class="note">보안 열쇠(SECRET)는 기본값 <code>hanmaum2026</code> — 바꾸실 경우 <b>index.html의 SECRET과 앱스크립트의 SECRET을 똑같이</b> 바꿔야 합니다.</div>
+
+  <div class="qa">
+    <h2>자주 묻는 질문</h2>
+    <p><b>스승인(승인) 화면이 무섭게 보이는데요?</b> — 본인이 만든 앱이라 안전합니다. 「고급」 → 「(안전하지 않은 페이지로) 이동」 → 본인 계정 선택 → 허용. 처음 1회만 나옵니다.</p>
+    <p><b>비용은?</b> — Google Apps Script·시트 모두 무료입니다. 일일 할당량도 행사 규모(수백 건)에서는 넉넉합니다.</p>
+    <p><b>여러 명이 접수 현황을 봐야 하면?</b> — 시트 오른쪽 위 <b>공유</b>로 담당자 이메일을 추가하면 같은 대장을 같이 봅니다.</p>
+    <p><b>신청폼에서 전송 실패가 나오면?</b> — URL이 /exec로 끝나는지, 액세스 권한이 '모든 사용자'인지 확인하세요. 그래도 안 되면 신청자 화면에 '내용 복사' 안내가 뜨므로 접수가 막히지는 않습니다.</p>
+  </div>
+</div>
+
+<script>
+'use strict';
+fetch('appscript-code.gs').then(function(r){ return r.text(); }).then(function(t){
+  document.getElementById('gscode').textContent = t;
+}).catch(function(){
+  document.getElementById('gscode').textContent = '(코드를 불러오지 못했습니다 — appscript-code.gs 파일을 직접 열어 복사해 주세요.)';
+});
+document.getElementById('copyGs').addEventListener('click', function(){
+  var t = document.getElementById('gscode').textContent, btn = this;
+  function ok(){ btn.textContent = '복사 완료 ✓'; setTimeout(function(){ btn.textContent = '코드 전체 복사'; }, 1800); }
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, legacy); else legacy();
+  function legacy(){
+    var ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta);
+    ta.select(); try{ document.execCommand('copy'); ok(); }catch(e){ alert('복사 실패 — 코드를 직접 선택해 복사해 주세요.'); }
+    document.body.removeChild(ta);
+  }
+});
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>

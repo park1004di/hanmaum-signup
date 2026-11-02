@@ -1,0 +1,864 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>팀 자동 배정 대시보드 · 2026 한마음 큰 잔치</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#101E38; --navy2:#1C2A4E; --cream:#FBF4E6; --paper:#FFFFFF; --chip:#F6EED9;
+    --red:#D8402F; --blue:#1F5AA8; --gold:#E8A72B; --green:#2E7D5B;
+    --ink:#101E38; --sub:#3A4A68; --muted:#7A869C; --line:rgba(16,30,56,.14);
+    --ok:#1F7A55; --err:#C0362A;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--cream);color:var(--ink);
+    font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .obang{height:8px;display:flex}.obang span{flex:1}
+  .en{font-family:'Barlow',sans-serif}
+  .wrap{max-width:980px;margin:0 auto;padding:0 20px 80px}
+  header{padding:40px 0 6px}
+  .eyebrow{font-family:'Barlow',sans-serif;font-weight:700;letter-spacing:.26em;font-size:12.5px;color:var(--green);margin:0 0 12px}
+  h1{margin:0;font-size:clamp(26px,5vw,38px);font-weight:900}
+  .lede{color:var(--sub);margin:10px 0 0;font-size:16px}
+  .lede b{color:var(--ink)}
+  .runbook{background:var(--navy);color:#D7E1F2;border-radius:14px;padding:16px 20px;margin-top:20px;font-size:14px}
+  .runbook b{color:#E8A72B}
+  .runbook ol{margin:8px 0 0;padding-left:20px}
+  .runbook li{margin:4px 0}
+  .panel{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:20px;margin-top:26px}
+  .panel h2{margin:0 0 6px;font-size:18px;font-weight:900}
+  .panel .sub2{font-size:13.5px;color:var(--muted);margin:0 0 12px}
+  textarea{width:100%;min-height:150px;padding:14px;border:1.5px solid var(--line);border-radius:12px;
+    background:#FFFDF8;font:inherit;font-size:14px;line-height:1.6;resize:vertical}
+  textarea:focus{outline:3px solid rgba(31,90,168,.4);outline-offset:1px;border-color:var(--blue)}
+  .btnrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+  .btn{border:0;border-radius:11px;padding:12px 20px;font:inherit;font-weight:900;cursor:pointer;font-size:15px}
+  .btn.primary{background:var(--red);color:#fff;box-shadow:0 8px 20px rgba(216,64,47,.25)}
+  .btn.primary:hover{background:#BC3323}
+  .btn.ghost{background:#EDE6D6;color:var(--sub)}
+  .btn.ghost:hover{background:#E4DCC8}
+  .btn.blue{background:var(--blue);color:#fff}
+  .btn.blue:hover{background:#174a8c}
+  .btn.green{background:var(--green);color:#fff}
+  .btn.green:hover{background:#256a4c}
+  .status{margin-top:12px;font-size:14px;font-weight:700}
+  .status .bad{color:var(--err)}
+  .status .good{color:var(--ok)}
+  .stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+  .stat{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:10px 18px;
+    font-size:14px;color:var(--sub);font-weight:700}
+  .stat b{font-size:20px;color:var(--ink);margin-left:6px}
+  .stat.hl{background:var(--navy);color:#D7E1F2;border-color:var(--navy)}
+  .stat.hl b{color:#E8A72B}
+  .teams{display:grid;gap:14px;margin-top:22px}
+  @media(min-width:720px){.teams{grid-template-columns:1fr 1fr}}
+  .team{border-radius:16px;padding:18px 20px;color:#fff}
+  .team.b{background:linear-gradient(160deg,#1F5AA8,#174a8c)}
+  .team.w{background:linear-gradient(160deg,#D8402F,#B33021)}
+  .team h3{margin:0;font-size:22px;font-weight:900}
+  .team .big{font-size:40px;font-weight:900;line-height:1.2}
+  .team table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13.5px}
+  .team td{padding:3px 0;color:rgba(255,255,255,.88)}
+  .team td:last-child{text-align:right;font-family:'Barlow',sans-serif;font-weight:700;color:#fff}
+  .team .avg{margin-top:10px;font-size:13px;color:rgba(255,255,255,.8)}
+  .group{background:var(--paper);border:1px solid var(--line);border-radius:14px;margin-top:14px;overflow:hidden}
+  .g-head{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;
+    padding:12px 16px;background:var(--chip);border-bottom:1px solid var(--line)}
+  .g-head .g-name{font-weight:900;font-size:15.5px}
+  .g-head .g-meta{font-size:13px;color:var(--muted)}
+  .g-tools{display:flex;gap:8px;align-items:center}
+  .teamchip{border:0;border-radius:999px;padding:6px 16px;font:inherit;font-size:13.5px;font-weight:900;cursor:pointer;color:#fff}
+  .teamchip.b{background:var(--blue)} .teamchip.w{background:var(--red)}
+  .del{border:1.5px solid var(--line);background:#fff;color:var(--err);border-radius:50%;
+    width:28px;height:28px;font-size:15px;font-weight:700;cursor:pointer;line-height:1}
+  table.roster{width:100%;border-collapse:collapse;font-size:14px}
+  table.roster th{background:#fff;color:var(--muted);font-size:12px;letter-spacing:.1em;text-align:left;
+    padding:8px 12px;border-bottom:1px solid var(--line);font-family:'Barlow',sans-serif}
+  table.roster td{padding:9px 12px;border-bottom:1px solid rgba(16,30,56,.07)}
+  table.roster tr:last-child td{border-bottom:0}
+  .pill{font-size:12px;font-weight:900;padding:3px 10px;border-radius:999px}
+  .pill.kid{background:#FBEED2;color:#7A4B06}
+  .pill.teen{background:#E4EEFB;color:#174a8c}
+  .pill.adult{background:#E9F5EE;color:var(--ok)}
+  .pill.senior{background:#F4E4FB;color:#6B2E8C}
+  .pill.fr{background:#DFF0E9;color:#1F7A55;border:1px solid rgba(31,122,85,.35)}
+  .pill.new{background:#EDE8FB;color:#5B3FA8;border:1px solid rgba(91,63,168,.3)}
+  .tb{font-weight:900}
+  .tb.b{color:var(--blue)} .tb.w{color:var(--red)}
+  .warnline{background:#FDF3F1;border:1.5px dashed var(--err);border-radius:12px;padding:12px 16px;
+    margin-top:14px;font-size:13.5px;color:var(--err);font-weight:700;display:none}
+  footer{margin-top:44px;border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font-size:13px}
+  .hide{display:none}
+  .viewtoggle{display:flex;gap:8px;margin:16px 0 4px}
+  .viewtoggle label{display:flex;align-items:center;gap:7px;border:1.5px solid var(--line);border-radius:999px;
+    padding:8px 16px;font-size:13.5px;font-weight:700;cursor:pointer;color:var(--sub)}
+  .viewtoggle input{accent-color:var(--blue);margin:0}
+  .viewtoggle label:has(input:checked){border-color:var(--blue);color:var(--blue);background:#F4F8FE}
+  .gcard{background:var(--paper);border:1px solid var(--line);border-radius:14px;margin-top:12px;overflow:hidden}
+  .g-head2{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline;justify-content:space-between;
+    padding:12px 16px;background:var(--chip);border-bottom:1px solid var(--line)}
+  .g-name2{font-weight:900;font-size:15.5px}
+  .g-name2 .t{color:var(--muted);font-weight:700;font-size:13px;margin-left:8px;font-family:'Barlow',sans-serif}
+  .g-count{font-family:'Barlow',sans-serif;font-weight:800;font-size:14px;color:var(--sub)}
+  .g-count .ok{color:var(--ok)} .g-count .short{color:var(--err)}
+  .gbody{padding:6px 16px 12px}
+  table.gtable{width:100%;border-collapse:collapse;font-size:14px}
+  table.gtable td{padding:7px 10px;border-bottom:1px solid rgba(16,30,56,.07)}
+  table.gtable tr:last-child td{border-bottom:0}
+  .shorthand{background:#FDF3F1;border:1.5px dashed var(--err);border-radius:10px;margin:10px 16px 14px;
+    padding:9px 14px;font-size:13px;color:var(--err);font-weight:700}
+  .pv{background:#FFFDF8;border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-top:10px;
+    font-size:14px;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+  .pv b{min-width:90px}
+  .pchip{background:var(--chip);border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:700;color:var(--sub)}
+</style>
+</head>
+<body>
+<div class="obang"><span style="background:#D8402F"></span><span style="background:#1F5AA8"></span><span style="background:#E8A72B"></span><span style="background:#2E7D5B"></span><span style="background:#FBF4E6"></span></div>
+<div class="wrap">
+  <header>
+    <p class="eyebrow en">TEAM &amp; GAME ASSIGNMENT · 운영자 도구</p>
+    <h1>팀 자동 배정 대시보드</h1>
+    <p class="lede">신청 마감(11/14) 후 이 페이지에서 <b>팀 → 게임 순서로 배정</b>합니다.
+      같이 온 <b>가족·미얀마 친구는 반드시 같은 팀</b>, 게임 배정에서는 <b>어른끼리·어린이끼리 같은 경기</b>로 묶입니다.
+      <b>늦게 온 추가 신청은 기존 배정을 그대로 둔 채 새 사람만</b> 배정됩니다.</p>
+    <div class="runbook">
+      <b>전체 순서 — 이것만 기억하세요</b>
+      <ol>
+        <li><b>[신청자]</b> 링크에서 신청 → 시트에 자동 기록 + 확인 메일(비밀번호·수정 링크) 발송</li>
+        <li><b>[한인회 · 11/14 마감 후]</b> 시트에서 신청 행 전체를 복사(헤더 행 제외) → 붙여넣기 → <b>자동 배정 실행 (팀)</b> → <b>게임 배정 실행</b></li>
+        <li><b>[추가 접수가 오면]</b> 시트의 행을 <b>통째로 다시 복사</b>해 아래 <b>추가 신청</b> 박스에 붙여넣고 <b>추가 인원만 배정</b> — 기존 접수번호는 자동 제외되고, <b>수정된 신청(수정일시가 바뀐 행)은 자동으로 찾아 그 가족만 다시 배정</b>합니다. 중복 삭제 같은 수동 작업은 없습니다</li>
+        <li>배정표는 <b>팀 배정표 복사</b> · <b>게임 배정표 복사</b> · <b>CSV 내려받기</b>로 공지·보관</li>
+      </ol>
+    </div>
+  </header>
+
+  <section class="panel">
+    <h2>전체 신청 붙여넣기</h2>
+    <p class="sub2">【2026 한마음 큰 잔치 참가 신청】 블록(메일·Viber 텍스트)과 <b>구글 시트에서 복사한 행(탭 구분)</b> 모두 붙여넣을 수 있습니다 — 형식을 자동으로 알아봅니다.</p>
+    <textarea id="rawInput" placeholder="【2026 한마음 큰 잔치 참가 신청】&#10;신청자: 박찬수&#10;연락처: 09-xxx-xxx&#10;인원: 총 3명 (어른 2 · 어린이 1)&#10;— 참가자 명단 —&#10;1. 박찬수 (어른 · 신청자, 나이 48, 티셔츠 L)&#10;2. 박서연 (어린이, 나이 9, 티셔츠 Kids 130)&#10;3. Ko Ko (어른 · 미얀마 친구, 나이 30, 티셔츠 M)"></textarea>
+    <div class="btnrow">
+      <button class="btn primary" id="runBtn">자동 배정 실행 (팀)</button>
+      <button class="btn ghost" id="sampleBtn">예시 데이터 불러오기</button>
+      <button class="btn ghost" id="clearBtn">전체 지우기</button>
+    </div>
+    <p class="status" id="status"></p>
+    <div class="warnline" id="warnline"></div>
+  </section>
+
+  <section class="panel" id="addPanel">
+    <h2>추가 신청 (늦게 온 접수)</h2>
+    <p class="sub2">시트에서 신청 행을 <b>통째로 다시 복사</b>해 붙여넣으세요 — <b>이미 배정된 접수번호는 자동으로 제외</b>되고(중복 걱정 없음), 새 사람만 팀·경기에 배정됩니다. 기존 사람들의 배정은 그대로 유지됩니다.</p>
+    <textarea id="addInput" style="min-height:110px" placeholder="【2026 한마음 큰 잔치 참가 신청】&#10;신청자: 늦은 가족&#10;…"></textarea>
+    <div class="btnrow">
+      <button class="btn green" id="addBtn">추가 인원만 배정</button>
+      <button class="btn ghost" id="addClear">추가 박스만 지우기</button>
+    </div>
+  </section>
+
+  <div class="stats hide" id="stats"></div>
+  <div class="teams hide" id="teams"></div>
+
+  <section class="panel hide" id="resultPanel">
+    <h2>팀 배정 결과</h2>
+    <p class="sub2">팀 칩을 누르면 그 신청(가족·친구 전원)이 반대 팀으로 이동합니다 · <button class="btn ghost" id="reAuto" style="padding:7px 14px;font-size:13px">팀 전체 다시 나누기</button></p>
+    <div id="groups"></div>
+    <div class="btnrow">
+      <button class="btn blue" id="copyBtn">팀 배정표 복사</button>
+      <button class="btn green" id="sheetCopyBtn">구글 시트용 복사</button>
+      <button class="btn ghost" id="csvBtn">CSV 내려받기</button>
+    </div>
+  </section>
+
+  <section class="panel hide" id="gamePanel">
+    <h2>게임별 자동 배정</h2>
+    <p class="sub2">정원·연령 적합(1인 최대 3종목) 기준, 같은 신청의 어른끼리·어린이끼리는 항상 같은 경기입니다. 줄다리기·박 터뜨리기는 전원 경기입니다. 모자라는 경기는 현장 모집으로 채우면 됩니다.</p>
+    <div class="btnrow">
+      <button class="btn primary" id="gameBtn">게임 배정 실행</button>
+      <button class="btn ghost" id="gameReset">게임 전체 다시 배정</button>
+      <button class="btn blue" id="gameCopy">게임 배정표 복사</button>
+    </div>
+    <div class="viewtoggle" id="gtoggle">
+      <label><input type="radio" name="gv" value="game" checked>경기별 보기</label>
+      <label><input type="radio" name="gv" value="person">개인별 보기</label>
+    </div>
+    <div id="gameView"></div>
+  </section>
+
+  <section class="panel hide" id="configPanel">
+    <h2>게임 정원 조정 (선택)</h2>
+    <p class="sub2">어린이 신청이 예상보다 많으면 정원을 늘리세요 — 예: 슬리퍼 10 → 16, 부활 피구 20 → 30. 값을 바꾼 뒤 위의 <b>게임 전체 다시 배정</b>을 누르면 새 정원으로 다시 나눠집니다. 줄다리기·박 터뜨리기는 전원 참가라 정원 조정이 없습니다(사람이 늘면 자동으로 같이 커집니다).</p>
+    <table class="roster"><thead><tr><th>경기</th><th>정원</th><th>어린이 슬롯</th><th>어른 슬롯</th></tr></thead><tbody id="cfgRows"></tbody></table>
+  </section>
+
+  <footer><b>2026 한마음 큰 잔치 · 미얀마 한인회</b> — 팀·게임 자동 배정 도구 · 브라우저에서만 동작하며 데이터는 저장되지 않습니다.</footer>
+</div>
+
+<script>
+'use strict';
+var groups = [];   // {gid, rep, tel, kimchi, fee, order, team:'b'|'w'|null, members:[...]}
+var gidSeq = 1;
+var assignedGids = {};  // 게임 배정을 마친 그룹 gid 집합
+
+function $(id){ return document.getElementById(id); }
+
+function band(age){
+  if(age<=12) return {key:'kid', label:'어린이', cls:'kid'};
+  if(age<=18) return {key:'teen', label:'청소년', cls:'teen'};
+  if(age<=64) return {key:'adult', label:'성인', cls:'adult'};
+  return {key:'senior', label:'어르신', cls:'senior'};
+}
+var BANDS = ['kid','teen','adult','senior'];
+var BAND_LABEL = {kid:'어린이(≤12)', teen:'청소년(13–18)', adult:'성인(19–64)', senior:'어르신(65+)'};
+
+/* ================= 게임 구성 (덱 확정 기준 — 바꿀 때는 여기만 수정) ================= */
+var GAMES = [
+ {no:'①', name:'슬리퍼 멀리 차기',      quota:10, kid:6,  adult:4,  time:'13:30~13:42'},
+ {no:'②', name:'기마전',               quota:32, kid:8,  adult:24, time:'13:47~14:02'},
+ {no:'③', name:'사람 찾기 & 2인 3각',   quota:14, kid:7,  adult:7,  time:'14:07~14:19'},
+ {no:'④', name:'어린이 부활 피구',      quota:20, kid:20, adult:0,  time:'14:24~14:39'},
+ {no:'⑤', name:'쌀가마니 오래 들기',    quota:20, kid:0,  adult:20, time:'14:44~14:56'},
+ {no:'⑥', name:'장애물 계주',          quota:14, kid:0,  adult:14, time:'15:01~15:13'},
+ {no:'⑦', name:'줄다리기 3판제',        quota:0, kid:0, adult:0, time:'15:18~15:38'}, // quota 0 = 전원 참가
+ {no:'⑧', name:'박 터뜨리기 피날레',     quota:0, kid:0, adult:0, time:'15:43~15:56'}  // quota 0 = 전원 참가
+];
+var KID_GAME_CAP = 3; // 1인 최대 3종목
+function isAllGame(gi){ return GAMES[gi].quota === 0; } // 0 = 전원 참가
+
+/* ---------- parsing ---------- */
+function parseInput(raw, startOrder){
+  var blocks = raw.split(/(?=【)/).map(function(b){return b.trim();}).filter(function(b){return b.indexOf('【')===0;});
+  var out = [], failed = [];
+  blocks.forEach(function(block, bi){
+    var g = {gid:gidSeq++, receipt:'', rep:'', tel:'', kimchi:'', fee:'', order:(startOrder||0)+out.length, team:null, members:[]};
+    var lines = block.split(/\n+/).map(function(l){return l.trim();});
+    lines.forEach(function(line){
+      if(/신청자[:：]/.test(line)) g.rep = line.split(/[:：]/)[1].trim();
+      else if(/접수번호[:：]/.test(line)) g.receipt = line.split(/[:：]/)[1].trim();
+      else if(/연락처[:：]/.test(line)) g.tel = line.split(/[:：]/)[1].trim();
+      else if(/김치/.test(line)) g.kimchi = (/참가/.test(line) && !/안\s*함/.test(line)) ? '참가' : '안 함';
+      else if(/한인회비/.test(line)) g.fee = /예/.test(line) ? '납부' : '미납';
+      else {
+        var m = line.match(/^(\d+)\.\s*(.+?)\s*\((.+?),\s*나이\s*(\d+)?,\s*티셔츠\s*(.+?)\)\s*$/);
+        if(m){
+          var kindStr = m[3], age = m[4]!==undefined ? parseInt(m[4],10) : NaN;
+          g.members.push({name:m[2], age:isNaN(age)?null:age, ageOk:!isNaN(age),
+            kind:/어린이/.test(kindStr)?'어린이':'어른', friend:/친구/.test(kindStr),
+            owner:/신청자/.test(kindStr), size:m[5].trim()});
+        } else if(/^\d+\./.test(line)) failed.push(line);
+      }
+    });
+    if(g.members.length){ g.fingerprint = g.members.map(function(m){ return m.name+'/'+m.age+'/'+m.size; }).join('|'); out.push(g); }
+    else failed.push('(신청자 '+(g.rep||bi+1)+'번 블록) 명단 한 줄이 인식되지 않았습니다');
+  });
+  return {groups:out, failed:failed};
+}
+
+/* ---------- 구글 시트 행(탭 구분) 파서 — 접수 대장에서 복사한 그대로 ---------- */
+function parseSheetRows(raw, startOrder){
+  var lines = raw.split(/\r?\n/);
+  var out = [], failed = [];
+  lines.forEach(function(line, li){
+    if(!line.trim()) return;
+    var cols = line.split('\t');
+    if(cols.length < 10){ if(/\d/.test(line)) failed.push(line.slice(0,60)); return; }
+    if(cols[0].indexOf('접수일시') > -1) return; // 헤더 행 스킵
+    var g = {gid:gidSeq++, receipt:cols[1]||'', rep:cols[2]||'', email:cols[3]||'', tel:cols[4]||'',
+      kimchi:'', fee:(cols[8]||'').indexOf('납부')>-1 ? '납부' : (cols[8] ? '미납' : ''),
+      order:(startOrder||0)+out.length, team:null, members:[]};
+    var mem = null;
+    try { mem = JSON.parse(cols[11]||'null'); } catch(e){ mem = null; }
+    if(Array.isArray(mem) && mem.length){
+      mem.forEach(function(m){
+        var age = (m.age===null||m.age===undefined||m.age==='') ? null : parseInt(m.age,10);
+        g.members.push({name:String(m.name||''), age:age, ageOk:age!==null,
+          kind:(age!==null && age<=12)?'어린이':'어른', friend:!!m.friend, owner:!!m.owner, size:String(m.size||'')});
+      });
+    } else {
+      String(cols[9]||'').split(' / ').forEach(function(part){
+        var m = part.match(/^\d+\.\s*(.+?)\((어른|어린이)(·신청자)?(·미얀마친구)?,\s*([^,]+?)세,\s*(.+?)\)$/);
+        if(m){
+          var age = /^\d+$/.test(m[5]) ? parseInt(m[5],10) : null;
+          g.members.push({name:m[1], age:age, ageOk:age!==null, kind:m[2], friend:!!m[4], owner:!!m[3], size:m[6]});
+        } else if(part.trim()) failed.push(part);
+      });
+    }
+    if(g.members.length){ g.fingerprint = (cols[12]||'')+'|'+String(cols[9]||''); out.push(g); }
+    else failed.push('(행 '+(li+1)+') 참가자 데이터를 읽지 못했습니다');
+  });
+  return {groups:out, failed:failed};
+}
+function looksLikeSheet(raw){
+  var lines = raw.split(/\r?\n/), hit = 0;
+  for(var i=0;i<lines.length;i++){
+    var c = lines[i].split('\t');
+    if(c.length>=10 && c[0] && c[0].indexOf('【')<0) hit++;
+  }
+  return hit > 0;
+}
+function parseAny(raw, startOrder){
+  if(looksLikeSheet(raw)) return parseSheetRows(raw, startOrder);
+  return parseInput(raw, startOrder);
+}
+
+/* ---------- 팀 자동 배정 (나이대 균형 + 그룹 응집) ---------- */
+/* newOnly: null 이면 전체 재배정, 배열이면 그 그룹들만 배정 (기존 팀 유지) */
+function autoAssign(newOnly){
+  var sum = {b:{kid:0,teen:0,adult:0,senior:0,total:0}, w:{kid:0,teen:0,adult:0,senior:0,total:0}};
+  function add(v, m){
+    var k = (m.age===null) ? 'adult' : band(m.age).key;
+    v[k]++; v.total++;
+  }
+  groups.forEach(function(g){ if(g.team) g.members.forEach(function(m){ add(sum[g.team], m); }); });
+  var targets = (newOnly || groups).filter(function(g){ return !g.team; });
+  var order = targets.slice().sort(function(a,b){
+    return b.members.length - a.members.length || a.order - b.order;
+  });
+  order.forEach(function(g, i){
+    function diffIf(team){
+      var t = {kid:sum[team].kid, teen:sum[team].teen, adult:sum[team].adult, senior:sum[team].senior, total:sum[team].total};
+      g.members.forEach(function(m){ add(t, m); });
+      var other = team==='b' ? sum.w : sum.b;
+      var d = 0;
+      BANDS.forEach(function(k){ d += Math.abs(t[k]-other[k]); });
+      return {d:d, size:t.total};
+    }
+    var B = diffIf('b'), W = diffIf('w'), team;
+    if(B.d < W.d) team='b';
+    else if(W.d < B.d) team='w';
+    else if(B.size < W.size) team='b';
+    else if(W.size < B.size) team='w';
+    else team = (i%2===0) ? 'b' : 'w';
+    g.team = team;
+    g.members.forEach(function(m){ add(sum[team], m); });
+  });
+}
+
+/* ---------- 게임 자동 배정 ---------- */
+/* mode 'full' : 전원 새로 배정 / 'incremental' : 기존 배정 유지 + 신규 그룹만 빈자리 배정 */
+var rosters, sideCnt, gameCount;
+function buildPpl(){
+  var ppl = [];
+  groups.forEach(function(g){
+    g.members.forEach(function(m){
+      ppl.push({gid:g.gid, team:g.team, m:m, isKid:(m.age!==null && m.age<=12)});
+    });
+  });
+  return ppl;
+}
+function assignGames(mode){
+  var full = (mode !== 'incremental') || !rosters;
+  var ppl = buildPpl();
+
+  if(full){
+    rosters = GAMES.map(function(){ return []; });
+    assignedGids = {};
+  } else {
+    // 삭제된 그룹이 있으면 그 사람들 배정만 제거 (나머지 유지)
+    var alive = {};
+    groups.forEach(function(g){ alive[g.gid] = true; });
+    rosters = rosters.map(function(rs){
+      return rs.filter(function(x){ return alive[x.p.gid]; });
+    });
+  }
+
+  sideCnt = GAMES.map(function(){ return {b:0, w:0}; });
+  gameCount = ppl.map(function(){ return 0; });
+  var usedKid = GAMES.map(function(){ return 0; });
+  var usedAdult = GAMES.map(function(){ return 0; });
+  var idxOf = {}; // gid+이름 조합은 과유ble — 전원 순번으로 idx 매핑
+  ppl.forEach(function(p, i){ idxOf[p.gid + '|' + p.m.name + '|' + p.m.size] = i; });
+  function place0(gi, p, i){
+    rosters[gi].push({idx:i, team:p.team, p:p});
+    sideCnt[gi][p.team]++;
+    gameCount[i]++;
+    if(p.isKid) usedKid[gi]++; else usedAdult[gi]++;
+  }
+  // 기존 배정 복구: rosters 항목은 그대로 두고 카운터만 현재 기준으로 재계산
+  if(!full){
+    // rosters에는 이미 기존 항목이 남아 있으므로, gameCount/sideCnt/used*만 현재 rosters 기준으로 다시 계산
+    gameCount = ppl.map(function(){ return 0; });
+    sideCnt = GAMES.map(function(){ return {b:0, w:0}; });
+    usedKid = GAMES.map(function(){ return 0; });
+    usedAdult = GAMES.map(function(){ return 0; });
+    rosters.forEach(function(rs, gi){
+      rs.forEach(function(x){
+        var i = idxOf[x.p.gid + '|' + x.p.m.name + '|' + x.p.m.size];
+        if(i === undefined) return;
+        x.idx = i; x.team = x.p.team;
+        sideCnt[gi][x.p.team]++; gameCount[i]++;
+        if(x.p.isKid) usedKid[gi]++; else usedAdult[gi]++;
+      });
+    });
+  }
+
+  // 신규 그룹만 유닛으로 구성 (같은 신청의 어른끼리/어린이끼리)
+  var units = [];
+  groups.forEach(function(g){
+    if(!full && assignedGids[g.gid]) return; // 기존 그룹은 이미 배정됨
+    var kidIdx = [], adIdx = [];
+    g.members.forEach(function(m){
+      var i = idxOf[g.gid + '|' + m.name + '|' + m.size];
+      if(i === undefined) return;
+      ((m.age!==null && m.age<=12) ? kidIdx : adIdx).push(i);
+    });
+    if(kidIdx.length) units.push({gid:g.gid, team:g.team, idx:kidIdx, isKid:true});
+    if(adIdx.length) units.push({gid:g.gid, team:g.team, idx:adIdx, isKid:false});
+  });
+
+  function bandSlots(gi, isKid){ return isKid ? (GAMES[gi].kid||0) : (GAMES[gi].adult||0); }
+  function gameEligible(gi){ return !isAllGame(gi); }
+  function fits(gi, u){
+    var used = u.isKid ? usedKid[gi] : usedAdult[gi];
+    if(used + u.idx.length > bandSlots(gi, u.isKid)) return false;
+    if(gameCount[u.idx[0]] >= KID_GAME_CAP) return false;
+    for(var k=0;k<rosters[gi].length;k++){
+      if(rosters[gi][k].p.gid===u.gid && rosters[gi][k].p.isKid===u.isKid) return false;
+    }
+    return true;
+  }
+  function place(gi, u){
+    u.idx.forEach(function(i){
+      rosters[gi].push({idx:i, team:u.team, p:ppl[i]});
+      gameCount[i]++;
+    });
+    sideCnt[gi][u.team] += u.idx.length;
+    if(u.isKid) usedKid[gi] += u.idx.length; else usedAdult[gi] += u.idx.length;
+  }
+  function runRound(isKid){
+    for(var gi=0; gi<GAMES.length; gi++){
+      if(!gameEligible(gi)) continue; // 전원 참가 경기는 배정 대상 아님
+      if(bandSlots(gi, isKid)===0) continue;
+      var under = sideCnt[gi].b <= sideCnt[gi].w ? 'b' : 'w';
+      var cands = units.filter(function(u){ return u.isKid===isKid && fits(gi,u); });
+      if(!cands.length) continue;
+      cands.sort(function(a,b){
+        var sa = a.team===under?0:1, sb = b.team===under?0:1;
+        if(sa!==sb) return sa-sb;
+        if(a.idx.length!==b.idx.length) return b.idx.length-a.idx.length;
+        return a.gid-b.gid;
+      });
+      place(gi, cands[0]);
+    }
+  }
+  var maxK = Math.max.apply(null, GAMES.map(function(g){ return g.kid||0; }).concat([0]));
+  var maxA = Math.max.apply(null, GAMES.map(function(g){ return g.adult||0; }).concat([0]));
+  for(var r=0; r<Math.max(maxK, maxA); r++){
+    runRound(true);
+    runRound(false);
+  }
+  groups.forEach(function(g){ assignedGids[g.gid] = true; });
+  return ppl;
+}
+
+/* ---------- rendering ---------- */
+function teamStats(team){
+  var v = {kid:0, teen:0, adult:0, senior:0, total:0}, ageSum=0, ageN=0;
+  groups.forEach(function(g){ if(g.team!==team) return;
+    g.members.forEach(function(m){
+      var k = m.age===null ? 'adult' : band(m.age).key;
+      v[k]++; v.total++;
+      if(m.age!==null){ ageSum += m.age; ageN++; }
+    });
+  });
+  v.avg = ageN ? Math.round(ageSum/ageN*10)/10 : null;
+  return v;
+}
+
+function renderStats(){
+  var b = teamStats('b'), w = teamStats('w');
+  var tot = b.total + w.total;
+  var allBands = BANDS.map(function(k){ return b[k]+w[k]; });
+  $('stats').innerHTML =
+    '<div class="stat hl">접수 <b>'+groups.length+'</b>건</div>' +
+    '<div class="stat">총 참가자 <b>'+tot+'</b>명</div>' +
+    BANDS.map(function(k,i){ return '<div class="stat">'+BAND_LABEL[k]+' <b>'+allBands[i]+'</b></div>'; }).join('');
+  function rows(v, vs){
+    return BANDS.map(function(k){ return '<tr><td>'+BAND_LABEL[k]+'</td><td>'+v[k]+' vs '+vs[k]+'</td></tr>'; }).join('');
+  }
+  $('teams').innerHTML =
+    '<div class="team b"><h3>청팀 TEAM BLUE</h3><div class="big">'+b.total+'명</div>' +
+      '<table>'+rows(b,w)+'</table><div class="avg">평균 나이 '+(b.avg??'—')+'세</div></div>' +
+    '<div class="team w"><h3>백팀 TEAM WHITE</h3><div class="big">'+w.total+'명</div>' +
+      '<table>'+rows(w,b)+'</table><div class="avg">평균 나이 '+(w.avg??'—')+'세</div></div>';
+}
+
+function renderGroups(){
+  var html = '';
+  groups.forEach(function(g, gi){
+    var teamLabel = g.team==='b' ? '청팀' : '백팀';
+    html += '<div class="group"><div class="g-head">' +
+      '<span class="g-name">G'+String(gi+1).padStart(2,'0')+' · '+esc(g.rep||'무명')+
+      '<span class="g-meta"> · '+g.members.length+'명'+(g.receipt?' · '+esc(g.receipt):'')+(g.tel?' · '+esc(g.tel):'')+(g.fee?' · 회비 '+g.fee:'')+'</span></span>' +
+      '<span class="g-tools"><button class="teamchip '+g.team+'" data-gi="'+gi+'" title="클릭하면 반대 팀으로 이동">'+teamLabel+' ⇄</button>' +
+      '<button class="del" data-del="'+gi+'" aria-label="이 신청 삭제">×</button></span></div>';
+    html += '<table class="roster"><thead><tr><th>이름</th><th>구분</th><th>나이</th><th>티셔츠</th><th>팀</th></tr></thead><tbody>';
+    g.members.forEach(function(m){
+      var bd = m.age===null ? {label:'나이확인', cls:'teen'} : band(m.age);
+      html += '<tr><td><b>'+esc(m.name)+'</b>'+(m.owner?' <span class="pill adult">신청자</span>':'')+'</td>' +
+        '<td>'+(m.friend?'<span class="pill fr">친구</span> ':'')+'<span class="pill '+bd.cls+'">'+bd.label+'</span></td>' +
+        '<td>'+(m.age===null?'—':m.age)+'</td><td>'+esc(m.size)+'</td>' +
+        '<td class="tb '+g.team+'">'+(g.team==='b'?'청':'백')+'</td></tr>';
+    });
+    html += '</tbody></table></div>';
+  });
+  $('groups').innerHTML = html;
+  Array.prototype.forEach.call(document.querySelectorAll('.teamchip'), function(btn){
+    btn.addEventListener('click', function(){
+      var gi = parseInt(btn.getAttribute('data-gi'),10);
+      flipTeam(gi);
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('.del'), function(btn){
+    btn.addEventListener('click', function(){
+      var gi = parseInt(btn.getAttribute('data-del'),10);
+      groups.splice(gi,1);
+      if(!groups.length){ $('stats').classList.add('hide'); $('teams').classList.add('hide'); $('resultPanel').classList.add('hide'); $('gamePanel').classList.add('hide'); $('configPanel').classList.add('hide'); rosters=null; assignedGids={}; }
+      renderAll();
+    });
+  });
+}
+
+function flipTeam(gi){
+  var g = groups[gi];
+  g.team = g.team==='b' ? 'w' : 'b';
+  if(rosters){
+    rosters.forEach(function(rs){ rs.forEach(function(x){ if(x.p.gid===g.gid) x.team = g.team; }); });
+  }
+  renderAll();
+}
+
+function renderAll(){
+  renderStats(); renderGroups();
+  $('stats').classList.remove('hide'); $('teams').classList.remove('hide');
+  $('resultPanel').classList.remove('hide'); $('gamePanel').classList.remove('hide');
+  $('configPanel').classList.remove('hide');
+  renderConfig();
+  if(lastPpl) renderGames();
+}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ---------- 게임 정원 조정 ---------- */
+function renderConfig(){
+  var rows = GAMES.map(function(g, gi){
+    if(isAllGame(gi)) return '<tr><td>'+g.no+' '+esc(g.name)+'</td>' +
+      '<td><input type="number" min="0" max="400" data-cfg="quota" data-gi="'+gi+'" value="'+g.quota+'" style="width:84px">명</td>' +
+      '<td colspan="2" style="color:var(--muted)">0이면 <b>전원 참가</b> (정원 자동) — 제한하려면 인원을 입력하세요</td></tr>';
+    return '<tr><td>'+g.no+' '+esc(g.name)+'</td>' +
+      '<td><input type="number" min="2" max="400" data-cfg="quota" data-gi="'+gi+'" value="'+g.quota+'" style="width:84px">명</td>' +
+      '<td><input type="number" min="0" max="200" data-cfg="kid" data-gi="'+gi+'" value="'+(g.kid||0)+'" style="width:84px">명</td>' +
+      '<td id="adultCalc'+gi+'">어른 '+(g.quota-(g.kid||0))+'명</td></tr>';
+  }).join('');
+  $('cfgRows').innerHTML = rows;
+  Array.prototype.forEach.call(document.querySelectorAll('[data-cfg]'), function(inp){
+    inp.addEventListener('change', function(){
+      var gi = parseInt(inp.getAttribute('data-gi'),10), v = parseInt(inp.value,10);
+      if(isNaN(v) || v < 0) return;
+      if(inp.getAttribute('data-cfg')==='quota'){
+        GAMES[gi].quota = v;
+        if(v === 0){ GAMES[gi].kid = 0; GAMES[gi].adult = 0; } // 전원 참가로 전환
+      } else {
+        if(isAllGame(gi)) return; // 전원 참가 경기는 슬롯 수동 조정 불가
+        GAMES[gi].kid = Math.min(v, GAMES[gi].quota);
+      }
+      GAMES[gi].adult = GAMES[gi].quota - GAMES[gi].kid;
+      renderConfig();
+    });
+  });
+}
+
+/* ---------- 게임 배정 렌더 ---------- */
+var lastPpl = null, gameMode = 'game';
+function renderGames(){
+  if(!lastPpl) return;
+  var v = $('gameView'), html = '';
+  if(gameMode==='game'){
+    GAMES.forEach(function(g, gi){
+      if(isAllGame(gi)){
+        html += '<div class="gcard"><div class="g-head2"><span class="g-name2">'+g.no+' '+esc(g.name)+
+          '<span class="t">'+g.time+'</span></span><span class="g-count"><span class="ok">전원 참가</span></span></div>' +
+          '<div class="gbody"><table class="gtable"><tr><td>신청자 전원이 참가하는 경기입니다 — 별도 배정 없음 (정원 조정에서 인원을 넣으면 제한 경기로 전환됩니다)</td></tr></table></div></div>';
+        return;
+      }
+      var n = rosters[gi].length, short = g.quota - n;
+      html += '<div class="gcard"><div class="g-head2"><span class="g-name2">'+g.no+' '+esc(g.name)+
+        '<span class="t">'+g.time+'</span></span><span class="g-count">배정 <span class="'+(short>0?'short">':'ok">')+n+'</span>/'+g.quota+'명'+
+        ' · 청 '+sideCnt[gi].b+' vs 백 '+sideCnt[gi].w+'</span></div>';
+      if(n){
+        html += '<div class="gbody"><table class="gtable">';
+        rosters[gi].forEach(function(r){
+          var m = r.p.m, bd = m.age===null?{label:'나이확인',cls:'teen'}:band(m.age);
+          html += '<tr><td><b>'+esc(m.name)+'</b>'+(m.friend?' <span class="pill fr">친구</span>':'')+'</td>' +
+            '<td><span class="pill '+bd.cls+'">'+bd.label+'</span></td>' +
+            '<td>'+(m.age===null?'—':m.age)+'세</td>' +
+            '<td class="tb '+r.team+'">'+(r.team==='b'?'청팀':'백팀')+'</td></tr>';
+        });
+        html += '</table></div>';
+      }
+      if(short>0) html += '<div class="shorthand">정원 부족 '+short+'명 — 현장 모집으로 채워 주세요</div>';
+      html += '</div>';
+    });
+  } else {
+    lastPpl.forEach(function(p, i){
+      var m = p.m, mine = [];
+      GAMES.forEach(function(g, gi){
+        if(g.quota!==null && rosters[gi].some(function(x){ return x.idx===i; })) mine.push(g.no+' '+g.name);
+      });
+      GAMES.forEach(function(g2, gi2){ if(isAllGame(gi2)) mine.push(g2.no+' '+g2.name); });
+      var chipStyle = p.team==='b' ? 'background:#E4EEFB;color:#174a8c' : 'background:#FBE4E1;color:#B33021';
+      html += '<div class="pv"><b>'+esc(m.name)+'</b><span class="pchip" style="'+chipStyle+'">'+(p.team==='b'?'청팀':'백팀')+'</span>' +
+        mine.map(function(x){ return '<span class="pchip">'+esc(x)+'</span>'; }).join('') + '</div>';
+    });
+  }
+  v.innerHTML = html;
+}
+
+/* ---------- actions ---------- */
+function runTeamFull(){
+  var raw = $('rawInput').value;
+  if(!raw.trim()){ $('status').innerHTML = '<span class="bad">먼저 신청 내용을 붙여넣어 주세요.</span>'; return; }
+  var r = parseInput(raw);
+  groups = r.groups;
+  groups.forEach(function(g){ g.team = null; });
+  autoAssign(null);
+  renderAll();
+  reportParse(r, '팀 배정 완료');
+  document.getElementById('resultPanel').scrollIntoView({behavior:'smooth', block:'start'});
+}
+function reportParse(r, prefix){
+  var n = groups.reduce(function(a,g){ return a+g.members.length; },0);
+  $('status').innerHTML = r.failed.length
+    ? '<span class="good">'+prefix+' — 신청 '+groups.length+'건 · 참가자 '+n+'명</span> · <span class="bad">인식 못한 줄 '+r.failed.length+'건은 아래 확인</span>'
+    : '<span class="good">'+prefix+' — 신청 '+groups.length+'건 · 참가자 '+n+'명</span>';
+  var wl = $('warnline');
+  if(r.failed.length){ wl.style.display='block'; wl.innerHTML = '인식 실패 줄 (수동 확인 필요):<br>· '+r.failed.map(esc).join('<br>· '); }
+  else wl.style.display='none';
+}
+$('runBtn').addEventListener('click', runTeamFull);
+$('reAuto').addEventListener('click', function(){
+  groups.forEach(function(g){ g.team = null; });
+  autoAssign(null);
+  renderAll();
+});
+
+/* 추가 인원만 배정: 기존 팀·경기 유지 + 새 사람만 */
+function removeFromRosters(g){
+  if(!rosters) return;
+  rosters.forEach(function(rs){
+    for(var i=rs.length-1; i>=0; i--){ if(rs[i].p.gid===g.gid) rs.splice(i,1); }
+  });
+  assignedGids[g.gid] = false; // 다시 배정 대상으로
+}
+$('addBtn').addEventListener('click', function(){
+  var raw = $('addInput').value;
+  if(!raw.trim()){ $('status').innerHTML = '<span class="bad">추가 신청 내용을 붙여넣어 주세요.</span>'; return; }
+  var r = parseAny(raw, groups.length);
+  if(!r.groups.length){ reportParse(r, '새로 배정할 신청 없음'); return; }
+  var have = {};
+  groups.forEach(function(g){ if(g.receipt) have[g.receipt] = g; });
+  var fresh = [], skipped = 0, updated = 0;
+  r.groups.forEach(function(g){
+    var prev = g.receipt ? have[g.receipt] : null;
+    if(prev){
+      if(prev.fingerprint === g.fingerprint){ skipped++; return; } // 같은 내용 — 제외
+      // 수정된 신청: 기존 경기 배정을 빼고 그룹을 교체(팀 유지) → 새 사람처럼 재배정
+      removeFromRosters(prev);
+      g.team = prev.team; g.gid = prev.gid;
+      groups[groups.indexOf(prev)] = g;
+      updated++;
+      return;
+    }
+    if(g.receipt) have[g.receipt] = true;
+    fresh.push(g);
+  });
+  if(!fresh.length && !updated){
+    reportParse(r, '새로 배정할 신청 없음 — 기존 '+skipped+'건은 접수번호 중복으로 자동 제외했습니다');
+    $('addInput').value = '';
+    return;
+  }
+  var firstRun = !groups.length && !updated;
+  groups = groups.concat(fresh);
+  if(firstRun) autoAssign(null);
+  else autoAssign(fresh);
+  var addedN = fresh.concat(updated).reduce(function(a,g){ return a+g.members.length; },0);
+  if(rosters){
+    assignGames('incremental'); // 기존 배정 유지 + 신규·수정분만 빈자리에
+    $('status').innerHTML = '<span class="good">추가 배정 완료 — 새 신청 '+fresh.length+'건 · 수정 재배정 '+updated+'건 (합계 '+addedN+'명)</span>' +
+      ' · 기존 나머지는 팀·경기 그대로 유지' +
+      (skipped ? ' · 중복 '+skipped+'건 자동 제외' : '');
+  } else {
+    $('status').innerHTML = '<span class="good">팀 배정 완료 — 새 신청 '+fresh.length+'건 · 수정 '+updated+'건 (합계 '+addedN+'명)</span>' +
+      ' · 「게임 배정 실행」을 누르면 경기도 배정됩니다' +
+      (skipped ? ' · 중복 '+skipped+'건 자동 제외' : '');
+  }
+  reportParse(r, '');
+  $('addInput').value = '';
+  renderAll();
+  if(lastPpl) renderGames();
+  document.getElementById('resultPanel').scrollIntoView({behavior:'smooth', block:'start'});
+});
+$('addClear').addEventListener('click', function(){ $('addInput').value=''; });
+
+$('clearBtn').addEventListener('click', function(){
+  $('rawInput').value=''; groups=[]; gidSeq=1; assignedGids={}; rosters=null; lastPpl=null;
+  $('status').textContent=''; $('warnline').style.display='none';
+  $('stats').classList.add('hide'); $('teams').classList.add('hide');
+  $('resultPanel').classList.add('hide'); $('gamePanel').classList.add('hide'); $('configPanel').classList.add('hide');
+});
+
+$('gameBtn').addEventListener('click', function(){
+  if(!groups.length){ $('status').innerHTML = '<span class="bad">먼저 팀 배정을 실행해 주세요.</span>'; return; }
+  lastPpl = assignGames(rosters ? 'incremental' : 'full');
+  renderGames();
+  if(rosters) $('gamePanel').classList.remove('hide');
+});
+$('gameReset').addEventListener('click', function(){
+  if(!groups.length){ $('status').innerHTML = '<span class="bad">먼저 팀 배정을 실행해 주세요.</span>'; return; }
+  lastPpl = assignGames('full');
+  renderGames();
+});
+
+Array.prototype.forEach.call(document.querySelectorAll('input[name=gv]'), function(radio){
+  radio.addEventListener('change', function(){ gameMode = this.value; renderGames(); });
+});
+
+$('copyBtn').addEventListener('click', function(){
+  var t = exportText();
+  var btn = this;
+  function ok(){ btn.textContent='복사 완료 ✓'; setTimeout(function(){ btn.textContent='팀 배정표 복사'; }, 1800); }
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, legacy);
+  else legacy();
+  function legacy(){
+    var ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta);
+    ta.select(); try{ document.execCommand('copy'); ok(); }catch(e){ alert('복사 실패 — 텍스트를 직접 선택해 주세요.'); }
+    document.body.removeChild(ta);
+  }
+});
+$('sheetCopyBtn').addEventListener('click', function(){
+  var t = sheetExportText(), btn = this;
+  function ok(){ btn.textContent='복사 완료 ✓ — 접수 대장에 붙여넣으세요'; setTimeout(function(){ btn.textContent='구글 시트용 복사'; }, 2200); }
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, legacy);
+  else legacy();
+  function legacy(){
+    var ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta);
+    ta.select(); try{ document.execCommand('copy'); ok(); }catch(e){ alert('복사 실패 — 텍스트를 직접 선택해 주세요.'); }
+    document.body.removeChild(ta);
+  }
+});
+$('gameCopy').addEventListener('click', function(){
+  var t = gameExportText();
+  var btn = this;
+  function ok(){ btn.textContent='복사 완료 ✓'; setTimeout(function(){ btn.textContent='게임 배정표 복사'; }, 1800); }
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, legacy);
+  else legacy();
+  function legacy(){
+    var ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta);
+    ta.select(); try{ document.execCommand('copy'); ok(); }catch(e){ alert('복사 실패 — 텍스트를 직접 선택해 주세요.'); }
+    document.body.removeChild(ta);
+  }
+});
+
+$('csvBtn').addEventListener('click', function(){
+  var rows = [['접수번호','신청자','연락처','이름','구분','친구','나이','티셔츠','팀','게임','김치만들기','한인회비']];
+  groups.forEach(function(g, gi){
+    g.members.forEach(function(m, mi){
+      var games = '(게임 배정 전)';
+      if(lastPpl){
+        var i = idxGlobal(gi, mi);
+        games = GAMES.filter(function(gd, gi2){ return gd.quota!==null && rosters[gi2].some(function(x){ return x.idx===i; }); })
+          .map(function(gd){ return gd.no; }).join(' ') + ' ⑦⑧';
+      }
+      rows.push(['G'+String(gi+1).padStart(2,'0'), g.rep, g.tel, m.name,
+        m.age===null?'나이확인':band(m.age).label, m.friend?'친구':'', m.age===null?'':m.age, m.size,
+        g.team==='b'?'청팀':'백팀', games, g.kimchi, g.fee]);
+    });
+  });
+  var csv = '\ufeff' + rows.map(function(r){ return r.map(function(c){ return '"'+String(c==null?'':c).replace(/"/g,'""')+'"'; }).join(','); }).join('\r\n');
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+  a.download = '한마음_팀배정표.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+});
+
+function idxGlobal(gi, mi){
+  var n = 0;
+  for(var g=0; g<gi; g++) n += groups[g].members.length;
+  return n + mi;
+}
+
+/* 접수 대장 시트 형식(탭 구분 10열) — 시트에 그대로 붙여넣기 한 줄 = 신청 1건 */
+function sheetExportText(){
+  var today = new Date().toLocaleString('ko-KR');
+  var L = [];
+  groups.forEach(function(g, gi){
+    var c = {a:0, k:0};
+    g.members.forEach(function(m){
+      var a = parseInt(m.age,10);
+      if(m.age!==null && !isNaN(a) && a<=12) c.k++; else c.a++;
+    });
+    var roster = g.members.map(function(m, mi){
+      var isKid = m.age!==null && m.age<=12;
+      var kind = (isKid?'어린이':'어른') + (mi===0?'·신청자':'') + (m.friend?'·미얀마친구':'');
+      return (mi+1)+'. '+m.name+'('+kind+', '+(m.age===null?'?':m.age)+'세, '+m.size+')';
+    }).join(' / ');
+    var mem = g.members.map(function(m, mi){
+      return {name:m.name, age:(m.age===null?null:m.age), size:m.size, friend:!!m.friend, owner:(mi===0)};
+    });
+    var cells = [today, '수동-G'+String(gi+1).padStart(2,'0'), g.rep||'', '', g.tel||'',
+      String(c.a), String(c.k), String(c.a+c.k), g.fee||'', roster, '', JSON.stringify(mem), ''];
+    L.push(cells.map(function(x){ return String(x==null?'':x).replace(/\t/g,' ').replace(/[\n\r]/g,' '); }).join('\t'));
+  });
+  return L.join('\n');
+}
+
+function exportText(){
+  var b = teamStats('b'), w = teamStats('w');
+  var L = ['【한마음 큰 잔치 — 팀 배정표】',
+    '청팀 '+b.total+'명 (어린이 '+b.kid+' · 청소년 '+b.teen+' · 성인 '+b.adult+' · 어르신 '+b.senior+')',
+    '백팀 '+w.total+'명 (어린이 '+w.kid+' · 청소년 '+w.teen+' · 성인 '+w.adult+' · 어르신 '+w.senior+')',''];
+  groups.forEach(function(g, gi){
+    L.push('G'+String(gi+1).padStart(2,'0')+' ['+(g.team==='b'?'청':'백')+'] '+g.rep+' ('+g.members.length+'명'+(g.tel?', '+g.tel:'')+')');
+    g.members.forEach(function(m,i){
+      L.push('  '+(i+1)+'. '+m.name+' — '+(m.friend?'친구 · ':'')+(m.age===null?'나이확인':band(m.age).label)+' / 나이 '+(m.age===null?'?':m.age)+' / '+m.size);
+    });
+  });
+  return L.join('\n');
+}
+
+function gameExportText(){
+  var L = ['【한마음 큰 잔치 — 게임 배정표】',''];
+  GAMES.forEach(function(g, gi){
+    L.push(g.no+' '+g.name+' ('+g.time+')');
+    if(isAllGame(gi)){ L.push('  · 신청자 전원 참가'); L.push(''); return; }
+    var n = rosters[gi].length;
+    if(!n){ L.push('  · 배정 0명 — 전원 현장 모집'); L.push(''); return; }
+    rosters[gi].forEach(function(r){
+      var m = r.p.m;
+      L.push('  '+(r.team==='b'?'[청]':'[백]')+' '+m.name+' ('+(m.age===null?'나이확인':band(m.age).label)+')');
+    });
+    if(g.quota - n > 0) L.push('  ▷ 정원 부족 '+(g.quota-n)+'명 — 현장 모집');
+    L.push('');
+  });
+  return L.join('\n');
+}
+
+/* ---------- sample ---------- */
+$('sampleBtn').addEventListener('click', function(){
+  $('rawInput').value = [
+'【2026 한마음 큰 잔치 참가 신청】\n신청자: 박찬수\n연락처: 09-770-111\n인원: 총 3명 (어른 2 · 어린이 1)\n한인회비 납부: 예\n— 참가자 명단 —\n1. 박찬수 (어른 · 신청자, 나이 48, 티셔츠 L)\n2. 박서연 (어린이, 나이 9, 티셔츠 Kids 130)\n3. Ko Ko (어른 · 미얀마 친구, 나이 30, 티셔츠 M)',
+'【2026 한마음 큰 잔치 참가 신청】\n신청자: 김미영\n연락처: 09-441-222\n인원: 총 4명 (어른 2 · 어린이 2)\n한인회비 납부: 예\n— 참가자 명단 —\n1. 김미영 (어른 · 신청자, 나이 41, 티셔츠 M)\n2. 정우진 (어른, 나이 44, 티셔츠 L)\n3. 정하윤 (어린이, 나이 11, 티셔츠 Kids 140)\n4. 정시우 (어린이, 나이 7, 티셔츠 Kids 120)',
+'【2026 한마음 큰 잔치 참가 신청】\n신청자: Aung Myat\n연락처: 09-333-333\n인원: 총 2명 (어른 2)\n한인회비 납부: 아니오\n— 참가자 명단 —\n1. Aung Myat (어른 · 신청자, 나이 35, 티셔츠 XL)\n2. Su Su (어른 · 미얀마 친구, 나이 28, 티셔츠 S)',
+'【2026 한마음 큰 잔치 참가 신청】\n신청자: 이광호\n연락처: 09-555-777\n인원: 총 5명 (어른 3 · 어린이 2)\n한인회비 납부: 예\n— 참가자 명단 —\n1. 이광호 (어른 · 신청자, 나이 52, 티셔츠 L)\n2. 최은주 (어른, 나이 49, 티셔츠 M)\n3. 이도현 (어린이, 나이 12, 티셔츠 Kids 140)\n4. 한예린 (어린이, 나이 8, 티셔츠 Kids 125)\n5. Kyaw Kyaw (어른 · 미얀마 친구, 나이 26, 티셔츠 M)',
+'【2026 한마음 큰 잔치 참가 신청】\n신청자: 최순자\n연락처: 09-222-888\n인원: 총 2명 (어른 2)\n한인회비 납부: 예\n— 참가자 명단 —\n1. 최순자 (어른 · 신청자, 나이 68, 티셔츠 M)\n2. 문상복 (어른, 나이 71, 티셔츠 L)',
+'【2026 한마음 큰 잔치 참가 신청】\n신청자: 정하늘\n연락처: 09-999-000\n인원: 총 3명 (어른 2 · 어린이 1)\n한인회비 납부: 아니오\n— 참가자 명단 —\n1. 정하늘 (어른 · 신청자, 나이 16, 티셔츠 S)\n2. 정지아 (어린이, 나이 10, 티셔츠 Kids 130)\n3. Thiri (어른 · 미얀마 친구, 나이 22, 티셔츠 S)'
+  ].join('\n\n');
+  $('runBtn').click();
+});
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>

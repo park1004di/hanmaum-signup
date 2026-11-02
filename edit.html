@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>신청 내용 수정 · 2026 한마음 큰 잔치</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#101E38;--cream:#FBF4E6;--paper:#fff;--red:#D8402F;--blue:#1F5AA8;--gold:#E8A72B;--green:#2E7D5B;
+    --ink:#101E38;--sub:#3A4A68;--muted:#7A869C;--line:rgba(16,30,56,.14);--ok:#1F7A55;--err:#C0362A}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--cream);color:var(--ink);font-family:'Noto Sans KR',sans-serif;font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .obang{height:8px;display:flex}.obang span{flex:1}
+  .en{font-family:'Barlow',sans-serif}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 70px}
+  header{padding:40px 0 8px}
+  .eyebrow{font-family:'Barlow',sans-serif;font-weight:700;letter-spacing:.26em;font-size:12.5px;color:var(--blue);margin:0 0 12px}
+  h1{margin:0;font-size:clamp(26px,5vw,38px);font-weight:900}
+  .lede{color:var(--sub);margin:10px 0 0;font-size:15.5px}
+  .panel{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:20px;margin-top:22px}
+  .panel h2{margin:0 0 10px;font-size:18px;font-weight:900}
+  label{display:block;font-size:13.5px;font-weight:700;color:var(--sub);margin-bottom:6px}
+  .req{color:var(--red)}
+  input{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:#FFFDF8;font:inherit;font-size:16px}
+  input:focus{border-color:var(--blue);outline:3px solid rgba(31,90,168,.4);outline-offset:1px}
+  input.bad{border-color:var(--err);background:#FDF3F1}
+  .grid{display:grid;gap:14px}
+  @media(min-width:640px){.g2{grid-template-columns:1fr 1fr}}
+  .btn{border:0;border-radius:11px;padding:12px 20px;font:inherit;font-weight:900;cursor:pointer;font-size:15px}
+  .btn.primary{background:var(--red);color:#fff;box-shadow:0 8px 20px rgba(216,64,47,.25)}
+  .btn.primary:hover{background:#BC3323}
+  .btn.blue{background:var(--blue);color:#fff}
+  .btn.ghost{background:#EDE6D6;color:var(--sub)}
+  .btnrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+  .status{margin-top:10px;font-size:14px;font-weight:700}
+  .status .bad{color:var(--err)} .status .good{color:var(--ok)}
+  .recard{background:#FFFDF8;border:1px solid var(--line);border-left:6px solid var(--blue);border-radius:12px;padding:14px 16px;margin-top:12px}
+  .recard b.rno{font-family:'Barlow',sans-serif;color:var(--blue);letter-spacing:.06em}
+  .recard .meta{color:var(--muted);font-size:13.5px;margin:4px 0 10px}
+  .editbtn{background:var(--green);color:#fff;border:0;border-radius:9px;padding:9px 16px;font:inherit;font-weight:900;cursor:pointer}
+  .person{background:#FFFDF8;border:1px solid var(--line);border-left:6px solid var(--blue);border-radius:12px;padding:14px;margin-bottom:12px;position:relative}
+  .person.kidrow{border-left-color:var(--gold)}
+  .badge{font-size:12px;font-weight:900;padding:3px 10px;border-radius:999px;background:var(--blue);color:#fff}
+  .badge.kid{background:var(--gold);color:#5A3E06}
+  .p-grid{display:grid;gap:10px;margin-top:10px}
+  @media(min-width:640px){.p-grid{grid-template-columns:1.4fr .7fr .9fr}}
+  .rm{position:absolute;right:12px;top:12px;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:var(--err);font-size:16px;font-weight:700;cursor:pointer;line-height:1}
+  .adder{display:flex;flex-wrap:wrap;gap:9px}
+  .adder button{border:1.5px dashed rgba(16,30,56,.35);background:#FFFDF8;border-radius:10px;padding:10px 15px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;color:var(--sub)}
+  .note{background:#FDF3F1;border:1.5px dashed var(--err);border-radius:12px;padding:12px 16px;font-size:13.5px;color:var(--err);font-weight:700;margin-top:14px}
+  .done2{display:none;background:var(--paper);border:1.5px solid var(--ok);border-radius:18px;padding:30px 24px;text-align:center;margin-top:22px}
+  .done2 .ring{width:70px;height:70px;border-radius:50%;background:#E9F5EE;color:var(--ok);font-size:32px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-weight:900}
+  footer{margin-top:40px;border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font-size:13px}
+  .hide{display:none}
+</style>
+</head>
+<body>
+<div class="obang"><span style="background:#D8402F"></span><span style="background:#1F5AA8"></span><span style="background:#E8A72B"></span><span style="background:#2E7D5B"></span><span style="background:#FBF4E6"></span></div>
+<div class="wrap">
+  <header>
+    <p class="eyebrow en">EDIT MY REGISTRATION · 신청 내용 수정</p>
+    <h1>신청 내용 수정</h1>
+    <p class="lede">접수 확인 메일에 안내된 <b>이메일과 비밀번호</b>로 로그인하면 내 신청을 직접 수정할 수 있습니다 — 이름·나이·티셔츠 사이즈, 인원 추가까지.</p>
+  </header>
+
+  <section class="panel" id="loginPanel">
+    <h2>1. 로그인</h2>
+    <div class="grid g2">
+      <div><label for="loginEmail">이메일 <span class="req">*</span></label><input type="email" id="loginEmail" placeholder="신청 때 쓴 이메일"></div>
+      <div><label for="loginPw">비밀번호 <span class="req">*</span></label><input type="password" id="loginPw" placeholder="확인 메일에 적힌 비밀번호"></div>
+    </div>
+    <div class="btnrow"><button class="btn primary" id="loginBtn">내 신청 찾기</button></div>
+    <p class="status" id="loginStatus"></p>
+  </section>
+
+  <section class="panel hide" id="listPanel">
+    <h2>2. 수정할 신청 고르기</h2>
+    <div id="reclist"></div>
+  </section>
+
+  <section class="panel hide" id="editPanel">
+    <h2>3. 내용 수정 — 접수번호 <span class="en" id="editRno" style="color:#1F5AA8"></span></h2>
+    <div class="grid g2">
+      <div><label for="editRep">신청자 <span class="req">*</span></label><input type="text" id="editRep"></div>
+      <div><label for="editTel">연락처 <span class="req">*</span></label><input type="tel" id="editTel"></div>
+    </div>
+    <div style="margin-top:14px">
+      <label class="agree" style="display:flex;gap:10px;align-items:flex-start;cursor:pointer">
+        <input type="checkbox" id="editFee" style="width:20px;height:20px;accent-color:var(--blue);margin:2px 0 0">
+        <span style="font-size:14.5px;color:var(--sub)"><b>한인회비 납부자입니다</b> (행운권 경품 추첨 자격)</span>
+      </label>
+    </div>
+    <h2 style="margin-top:22px">참가자 명단</h2>
+    <div id="roster"></div>
+    <div class="adder">
+      <button type="button" id="addAdult">+ 어른 추가</button>
+      <button type="button" id="addChild">+ 어린이 추가</button>
+      <button type="button" id="addFriend">+ 미얀마 친구 추가</button>
+    </div>
+    <div class="btnrow">
+      <button class="btn primary" id="saveBtn">수정 저장하기</button>
+      <button class="btn ghost" id="cancelBtn">취소</button>
+    </div>
+    <p class="status" id="saveStatus"></p>
+    <div class="note">이메일·접수번호는 바꿀 수 없습니다. 신청 자체를 취소하려면 담당자에게 연락해 주세요.</div>
+  </section>
+
+  <div class="done2" id="savedBox">
+    <div class="ring">✓</div>
+    <h2 style="margin:0 0 6px;font-size:23px">수정이 저장되었습니다</h2>
+    <p style="color:var(--sub);margin:4px 0">시트 대장에도 반영되었습니다 — 접수번호 <b class="en" style="color:#1F5AA8" id="savedRno"></b></p>
+    <p class="en" style="color:var(--muted);font-size:13px">Your changes are saved to the registration sheet.</p>
+  </div>
+
+  <footer><b>2026 한마음 큰 잔치 · 미얀마 한인회</b> — 신청 내용 수정 페이지</footer>
+</div>
+
+<script>
+'use strict';
+/* 설정 — 주최측: index.html의 SHEET_URL과 같은 웹 앱 URL을 여기에도 넣으세요 */
+var SHEET_URL = "";
+var SECRET = "hanmaum2026";
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function band(age){ if(age<=12) return {label:'어린이',cls:'kid'}; if(age<=18) return {label:'청소년',cls:'teen'}; if(age<=64) return {label:'성인',cls:'adult'}; return {label:'어르신',cls:'senior'}; }
+var SIZES = ['Kids 100','Kids 110','Kids 120','Kids 130','Kids 140','S','M','L','XL'];
+var my = null, myHash = '', myEmail = '', people = [];
+
+function hashPw(email, pw){
+  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(SECRET + '|' + email + '|' + pw))
+    .then(function(buf){ return Array.prototype.map.call(new Uint8Array(buf), function(b){ return ('0'+b.toString(16)).slice(-2); }).join(''); });
+}
+function jsonp(url){
+  return new Promise(function(res, rej){
+    var cb = 'hcb' + Math.floor(Math.random()*1e9);
+    var s = document.createElement('script');
+    var timer = setTimeout(function(){ cleanup(); rej(new Error('timeout')); }, 12000);
+    window[cb] = function(d){ clearTimeout(timer); cleanup(); res(d); };
+    s.src = url + (url.indexOf('?')>-1 ? '&' : '?') + 'callback=' + cb;
+    s.onerror = function(){ clearTimeout(timer); cleanup(); rej(new Error('load')); };
+    function cleanup(){ try{ delete window[cb]; }catch(e){ window[cb]=undefined; } if(s.parentNode) s.parentNode.removeChild(s); }
+    document.body.appendChild(s);
+  });
+}
+
+$('loginBtn').addEventListener('click', async function(){
+  var st = $('loginStatus');
+  var em = $('loginEmail').value.trim().toLowerCase(), pw = $('loginPw').value;
+  if(!/.+@.+\..+/.test(em) || pw.length<4){ st.innerHTML = '<span class="bad">이메일과 비밀번호(4자 이상)를 확인해 주세요.</span>'; return; }
+  if(!SHEET_URL || SHEET_URL.indexOf('script.google') < 0){ st.innerHTML = '<span class="bad">수정 기능이 아직 연결 전입니다 — 시트 연결 가이드(STEP 2~6)를 마치면 사용할 수 있습니다.</span>'; return; }
+  st.textContent = '내 신청을 찾는 중…';
+  try {
+    var h = await hashPw(em, pw);
+    var j = await jsonp(SHEET_URL + '?action=lookup&email=' + encodeURIComponent(em) + '&pwhash=' + h);
+    var list = (j && j.ok) ? (j.list || []) : [];
+    if(!list.length){ st.innerHTML = '<span class="bad">해당 이메일·비밀번호로 접수 기록이 없습니다 — 신청 때 입력한 값을 확인해 주세요.</span>'; return; }
+    st.textContent = '';
+    myEmail = em; myHash = h;
+    var html = '';
+    list.forEach(function(r, i){
+      html += '<div class="recard"><b class="rno">' + esc(r.receipt) + '</b> · 접수 ' + esc(String(r.ts)) +
+        '<div class="meta">' + esc(r.rep) + ' · 총 ' + esc(String(r.total)) + '명 (어른 ' + esc(String(r.adults)) + ' · 어린이 ' + esc(String(r.kids)) + ')</div>' +
+        '<button class="editbtn" data-i="' + i + '">이 신청 수정하기</button></div>';
+    });
+    $('reclist').innerHTML = html;
+    $('listPanel').classList.remove('hide');
+    Array.prototype.forEach.call(document.querySelectorAll('.editbtn'), function(btn){
+      btn.addEventListener('click', function(){ openEditor(list[parseInt(btn.getAttribute('data-i'),10)]); });
+    });
+    $('listPanel').scrollIntoView({behavior:'smooth', block:'start'});
+  } catch(e){
+    st.innerHTML = '<span class="bad">조회에 실패했습니다 — 잠시 후 다시 시도해 주세요.</span>';
+  }
+});
+
+function openEditor(rec){
+  my = rec;
+  try { people = JSON.parse(rec.members); } catch(e){ people = []; }
+  if(!Array.isArray(people) || !people.length){
+    $('editRno').textContent = rec.receipt;
+    $('saveStatus').innerHTML = '<span class="bad">이 접수는 수정 데이터가 없습니다 — 대장의 참가자데이터 열이 비어 있습니다. 담당자에게 문의해 주세요.</span>';
+    $('editPanel').classList.remove('hide');
+    return;
+  }
+  $('editRno').textContent = rec.receipt;
+  $('editRep').value = rec.rep; $('editTel').value = rec.tel;
+  $('editFee').checked = (String(rec.fee).indexOf('납부') > -1);
+  renderRoster();
+  $('editPanel').classList.remove('hide');
+  $('editPanel').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function renderRoster(){
+  var box = $('roster'); box.innerHTML = '';
+  people.forEach(function(p, i){
+    var kid = p.age !== null && p.age <= 12;
+    var row = document.createElement('div');
+    row.className = 'person' + (kid ? ' kidrow' : '');
+    row.innerHTML = '<span class="badge' + (kid ? ' kid' : '') + '">' + (kid ? '어린이' : '어른') + '</span>' +
+      (p.friend ? ' <span class="badge" style="background:var(--green)">친구</span>' : '') +
+      (i === 0 ? ' <span class="badge" style="background:var(--navy)">대표</span>' : '') +
+      (i > 0 ? '<button class="rm" type="button" aria-label="삭제">×</button>' : '') +
+      '<div class="p-grid">' +
+      '<div><label>이름 <span class="req">*</span></label><input type="text" data-f="name" value="' + esc(p.name||'') + '"></div>' +
+      '<div><label>나이 <span class="req">*</span></label><input type="number" min="0" max="120" data-f="age" value="' + (p.age===null||p.age===undefined ? '' : p.age) + '"></div>' +
+      '<div><label>티셔츠 <span class="req">*</span></label><select data-f="size">' + SIZES.map(function(x){ return '<option' + (p.size===x?' selected':'') + '>' + x + '</option>'; }).join('') + '</select></div>' +
+      '</div>';
+    if(i > 0) row.querySelector('.rm').addEventListener('click', function(){ people.splice(i,1); renderRoster(); });
+    row.querySelectorAll('[data-f]').forEach(function(inp){
+      inp.addEventListener('input', function(){
+        var f = inp.getAttribute('data-f');
+        if(f==='name') people[i].name = inp.value;
+        if(f==='age') people[i].age = inp.value==='' ? null : parseInt(inp.value,10);
+        if(f==='size') people[i].size = inp.value;
+      });
+      inp.addEventListener('change', function(){ renderRoster(); });
+    });
+    box.appendChild(row);
+  });
+}
+$('addAdult').addEventListener('click', function(){ people.push({name:'', age:null, size:'', friend:false, owner:false}); renderRoster(); });
+$('addChild').addEventListener('click', function(){ people.push({name:'', age:8, size:'', friend:false, owner:false}); renderRoster(); });
+$('addFriend').addEventListener('click', function(){ people.push({name:'', age:null, size:'', friend:true, owner:false}); renderRoster(); });
+$('cancelBtn').addEventListener('click', function(){ $('editPanel').classList.add('hide'); });
+
+$('saveBtn').addEventListener('click', async function(){
+  var st = $('saveStatus'); st.textContent = '';
+  var errs = [];
+  people.forEach(function(p, i){
+    if(!String(p.name||'').trim() || p.age===null || p.age===undefined || isNaN(p.age) || !p.size) errs.push((i+1)+'번 참가자의 이름·나이·사이즈');
+  });
+  if(people.length > 10) errs.push('한 번의 신청은 최대 10명');
+  if(!$('editRep').value.trim() || !$('editTel').value.trim()) errs.push('신청자 이름·연락처');
+  if(errs.length){ st.innerHTML = '<span class="bad">확인해 주세요 — ' + esc(errs.join(' · ')) + '</span>'; return; }
+  var kids = people.filter(function(p){ return p.age!==null && p.age<=12; }).length;
+  var adults = people.length - kids;
+  if(kids > adults){ st.innerHTML = '<span class="bad">어린이 1인당 보호자 어른 1명이 필요합니다 (어린이 ' + kids + '명 → 어른 최소 ' + kids + '명)</span>'; return; }
+  if(!SHEET_URL || SHEET_URL.indexOf('script.google') < 0){ st.innerHTML = '<span class="bad">수정 기능이 아직 연결 전입니다.</span>'; return; }
+
+  var btn = $('saveBtn'); btn.disabled = true; btn.textContent = '저장 중…';
+  function rosterString(){
+    return people.map(function(p, i){
+      var kid = p.age !== null && p.age <= 12;
+      var kind = (kid ? '어린이' : '어른') + (i===0 ? '·신청자' : '') + (p.friend ? '·미얀마친구' : '');
+      return (i+1)+'. '+String(p.name).trim()+'('+kind+', '+p.age+'세, '+p.size+')';
+    }).join(' / ');
+  }
+  var payload = { secret:SECRET, action:'update', receipt:my.receipt, pwhash:myHash,
+    rep:$('editRep').value.trim(), tel:$('editTel').value.trim(),
+    adults:adults, kids:kids, total:people.length,
+    fee:$('editFee').checked ? '납부' : '미납', roster:rosterString(),
+    members:JSON.stringify(people), editTs:new Date().toLocaleString('ko-KR') };
+  fetch(SHEET_URL, {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(payload)});
+  var saved = false;
+  for(var i=0; i<8 && !saved; i++){
+    await new Promise(function(r){ setTimeout(r, 2000); });
+    try{
+      var j = await jsonp(SHEET_URL + '?action=lookup&email=' + encodeURIComponent(myEmail) + '&pwhash=' + myHash);
+      var row = (j && j.ok ? (j.list||[]) : []).find(function(x){ return x.receipt === my.receipt; });
+      if(row && String(row.roster) === rosterString()) saved = true;
+    }catch(e){}
+  }
+  btn.disabled = false; btn.textContent = '수정 저장하기';
+  if(saved){
+    $('editPanel').classList.add('hide'); $('listPanel').classList.add('hide');
+    $('savedRno').textContent = my.receipt;
+    $('savedBox').style.display = 'block';
+    $('savedBox').scrollIntoView({behavior:'smooth', block:'center'});
+  } else {
+    st.innerHTML = '<span class="bad">저장 확인이 늦어집니다 — 1~2분 뒤 저장 버튼을 한 번만 더 눌러 주세요.</span>';
+  }
+});
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>
