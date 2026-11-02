@@ -119,6 +119,15 @@
 </style>
 </head>
 <body>
+<div id="lock" style="position:fixed; left:0; top:0; right:0; bottom:0; background:#101E38; z-index:999; display:flex; align-items:center; justify-content:center;">
+  <div style="background:#FFFFFF; border-radius:16px; padding:30px 26px; max-width:360px; width:88%; text-align:center; box-shadow:0 18px 50px rgba(0,0,0,.4)">
+    <div class="en" style="letter-spacing:.22em; font-size:12px; color:#1F5AA8; font-weight:700; margin-bottom:8px">OPERATOR ACCESS · 운영자 전용</div>
+    <h2 style="margin:0 0 14px; font-size:21px; font-weight:900">비밀번호를 입력하세요</h2>
+    <input type="password" id="lockPw" placeholder="운영자 비밀번호" style="width:100%; padding:12px 14px; border:1.5px solid rgba(16,30,56,.2); border-radius:10px; font:inherit; font-size:16px; text-align:center" autofocus>
+    <button id="lockBtn" style="width:100%; margin-top:12px; background:#1F5AA8; color:#fff; border:0; border-radius:10px; padding:12px; font:inherit; font-weight:900; cursor:pointer">열기</button>
+    <p id="lockErr" style="color:#C0362A; font-size:13.5px; font-weight:700; margin:10px 0 0; min-height:20px"></p>
+  </div>
+</div>
 <div class="obang"><span style="background:#D8402F"></span><span style="background:#1F5AA8"></span><span style="background:#E8A72B"></span><span style="background:#2E7D5B"></span><span style="background:#FBF4E6"></span></div>
 <div class="wrap">
   <header>
@@ -858,6 +867,26 @@ $('sampleBtn').addEventListener('click', function(){
   ].join('\n\n');
   $('runBtn').click();
 });
+</script>
+<script>
+/* 운영자 비밀번호 — 바꾸려면 이 줄만 수정하세요 (깃허브에서 연필 → 수정 → Commit) */
+var OP_PW = "hanmaum1128";
+(function(){
+  var lock = document.getElementById('lock');
+  try { if(sessionStorage.getItem('hmLock') === 'ok'){ lock.style.display = 'none'; return; } } catch(e){}
+  function tryPw(){
+    var v = document.getElementById('lockPw').value;
+    if(v === OP_PW){
+      try { sessionStorage.setItem('hmLock','ok'); } catch(e){}
+      lock.style.display = 'none';
+    } else {
+      document.getElementById('lockErr').textContent = '비밀번호가 다릅니다 — 다시 입력해 주세요';
+      document.getElementById('lockPw').value = '';
+    }
+  }
+  document.getElementById('lockBtn').addEventListener('click', tryPw);
+  document.getElementById('lockPw').addEventListener('keydown', function(e){ if(e.key === 'Enter') tryPw(); });
+})();
 </script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 </body>
