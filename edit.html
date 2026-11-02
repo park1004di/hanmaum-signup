@@ -125,7 +125,7 @@ var SECRET = "hanmaum2026";
 
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function band(age){ if(age<=12) return {label:'어린이',cls:'kid'}; if(age<=18) return {label:'청소년',cls:'teen'}; if(age<=64) return {label:'성인',cls:'adult'}; return {label:'어르신',cls:'senior'}; }
+function band(age){ if(age<=15) return {label:'어린이',cls:'kid'}; if(age<=18) return {label:'청소년',cls:'teen'}; if(age<=64) return {label:'성인',cls:'adult'}; return {label:'어르신',cls:'senior'}; }
 var SIZES = ['Kids 100','Kids 110','Kids 120','Kids 130','Kids 140','S','M','L','XL'];
 var my = null, myHash = '', myEmail = '', people = [];
 
@@ -196,7 +196,7 @@ function openEditor(rec){
 function renderRoster(){
   var box = $('roster'); box.innerHTML = '';
   people.forEach(function(p, i){
-    var kid = p.age !== null && p.age <= 12;
+    var kid = p.age !== null && p.age <= 15;
     var row = document.createElement('div');
     row.className = 'person' + (kid ? ' kidrow' : '');
     row.innerHTML = '<span class="badge' + (kid ? ' kid' : '') + '">' + (kid ? '어린이' : '어른') + '</span>' +
@@ -237,7 +237,7 @@ $('saveBtn').addEventListener('click', async function(){
   if(people.length > 10) errs.push('한 번의 신청은 최대 10명');
   if(!$('editRep').value.trim() || !$('editTel').value.trim()) errs.push('신청자 이름·연락처');
   if(errs.length){ st.innerHTML = '<span class="bad">확인해 주세요 — ' + esc(errs.join(' · ')) + '</span>'; return; }
-  var kids = people.filter(function(p){ return p.age!==null && p.age<=12; }).length;
+  var kids = people.filter(function(p){ return p.age!==null && p.age<=15; }).length;
   var adults = people.length - kids;
   if(adults === 0 && kids > 0){ st.innerHTML = '<span class="bad">어린이는 반드시 보호자 어른과 함께 등록해야 합니다.</span>'; return; }
   if(adults > 0 && kids > adults * 3){ st.innerHTML = '<span class="bad">어른 1명당 어린이 최대 3명입니다 — 어린이 ' + kids + '명이면 어른 최소 ' + Math.ceil(kids/3) + '명이 필요합니다.</span>'; return; }
@@ -246,7 +246,7 @@ $('saveBtn').addEventListener('click', async function(){
   var btn = $('saveBtn'); btn.disabled = true; btn.textContent = '저장 중…';
   function rosterString(){
     return people.map(function(p, i){
-      var kid = p.age !== null && p.age <= 12;
+      var kid = p.age !== null && p.age <= 15;
       var kind = (kid ? '어린이' : '어른') + (p.gender==='m'?'·남':(p.gender==='f'?'·여':'')) + (i===0 ? '·신청자' : '') + (p.friend ? '·미얀마친구' : '');
       return (i+1)+'. '+String(p.name).trim()+'('+kind+', '+p.age+'세, '+p.size+')';
     }).join(' / ');

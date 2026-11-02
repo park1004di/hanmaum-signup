@@ -176,12 +176,21 @@
   <section class="panel hide" id="resultPanel">
     <h2>팀 배정 결과</h2>
     <p class="sub2">팀 칩을 누르면 그 신청(가족·친구 전원)이 반대 팀으로 이동합니다 · <button class="btn ghost" id="reAuto" style="padding:7px 14px;font-size:13px">팀 전체 다시 나누기</button></p>
+    <div class="viewtoggle" id="divtoggle">
+      <label><input type="radio" name="dm" value="single" checked>한 팀씩 섞기 — 전체 청/백 (기본)</label>
+      <label><input type="radio" name="dm" value="div">부별 나누기 — 유아부·초등부·중등부·고등부·어른부</label>
+    </div>
     <div id="groups"></div>
     <div class="btnrow">
       <button class="btn blue" id="copyBtn">팀 배정표 복사</button>
       <button class="btn green" id="sheetCopyBtn">구글 시트용 복사</button>
       <button class="btn ghost" id="csvBtn">CSV 내려받기</button>
     </div>
+  </section>
+
+  <section class="panel hide" id="divPanel">
+    <h2>부별 전적 (부별 모드)</h2>
+    <div id="divTable"></div>
   </section>
 
   <section class="panel hide" id="gamePanel">
@@ -219,32 +228,33 @@ function $(id){ return document.getElementById(id); }
 var KID_BANDS = [
  {key:'tot',  label:'유아(3–5)',    lo:3, hi:5},
  {key:'low',  label:'저학년(6–9)',  lo:6, hi:9},
- {key:'high', label:'고학년(10–12)', lo:10, hi:12}
+ {key:'high', label:'고학년(10–12)', lo:10, hi:12},
+ {key:'mid',  label:'중학생(13–15)', lo:13, hi:15}
 ];
 function kidBand(age){
   for(var i=0;i<KID_BANDS.length;i++){ if(age>=KID_BANDS[i].lo && age<=KID_BANDS[i].hi) return KID_BANDS[i]; }
   return KID_BANDS[1];
 }
 function band(age){
-  if(age<=12){ var kb=kidBand(age); return {key:'kid', label:'어린이·'+kb.label, cls:'kid'}; }
+  if(age<=15){ var kb=kidBand(age); return {key:'kid', label:'어린이·'+kb.label, cls:'kid'}; }
   if(age<=18) return {key:'teen', label:'청소년', cls:'teen'};
   if(age<=64) return {key:'adult', label:'성인', cls:'adult'};
   return {key:'senior', label:'어르신', cls:'senior'};
 }
 var BANDS = ['kid','teen','adult','senior'];
-var BAND_LABEL = {kid:'어린이(≤12)', teen:'청소년(13–18)', adult:'성인(19–64)', senior:'어르신(65+)'};
+var BAND_LABEL = {kid:'어린이(≤15)', teen:'청소년(13–18)', adult:'성인(19–64)', senior:'어르신(65+)'};
 
 /* ================= 게임 구성 (덱 확정 기준 — 바꿀 때는 여기만 수정) ================= */
 var GAMES = [
  {no:'①', name:'슬리퍼 멀리 차기',      quota:10, kid:6,  adult:4,  time:'13:30~13:42', kmin:3, kmax:6},
- {no:'②', name:'기마전',               quota:32, kid:8,  adult:24, time:'13:47~14:02', kmin:6, kmax:12},
- {no:'③', name:'사람 찾기 & 2인 3각',   quota:14, kid:7,  adult:7,  time:'14:07~14:19', kmin:6, kmax:12},
- {no:'④', name:'어린이 부활 피구',      quota:20, kid:20, adult:0,  time:'14:24~14:39', kmin:3, kmax:12},
+ {no:'②', name:'기마전',               quota:32, kid:8,  adult:24, time:'13:47~14:02', kmin:6, kmax:15},
+ {no:'③', name:'사람 찾기 & 2인 3각',   quota:14, kid:7,  adult:7,  time:'14:07~14:19', kmin:6, kmax:15},
+ {no:'④', name:'어린이 부활 피구',      quota:20, kid:20, adult:0,  time:'14:24~14:39', kmin:3, kmax:15},
  {no:'⑤', name:'쌀가마니 오래 들기',    quota:20, kid:0,  adult:20, time:'14:44~14:56', maleOnly:true},
  {no:'⑥', name:'장애물 계주',          quota:14, kid:0,  adult:14, time:'15:01~15:13'},
  {no:'⑦', name:'줄다리기 3판제',        quota:0, kid:0, adult:0, time:'15:18~15:38'}, // quota 0 = 전원 참가
  {no:'⑧', name:'박 터뜨리기 피날레',     quota:0, kid:0, adult:0, time:'15:43~15:56'}, // quota 0 = 전원 참가
- {no:'⑨', name:'공 컬링 (요가공)',          quota:30, kid:24, adult:6, time:'15:56~16:10', kmin:3, kmax:12} // 어린이 전원 참가
+ {no:'⑨', name:'공 컬링 (요가공)',          quota:30, kid:24, adult:6, time:'15:56~16:10', kmin:3, kmax:15} // 어린이 전원 참가
 ];
 var KID_GAME_CAP = 3; // 1인 최대 3종목
 function isAllGame(gi){ return GAMES[gi].quota === 0; } // 0 = 전원 참가
@@ -371,7 +381,7 @@ function buildPpl(){
   var ppl = [];
   groups.forEach(function(g){
     g.members.forEach(function(m){
-      ppl.push({gid:g.gid, team:g.team, m:m, isKid:(m.age!==null && m.age<=12)});
+      ppl.push({gid:g.gid, team:g.team, m:m, isKid:(m.age!==null && m.age<=15)});
     });
   });
   return ppl;
@@ -417,7 +427,7 @@ function assignGames(mode){
     g.members.forEach(function(m){
       var i = idxOf[g.gid + '|' + m.name + '|' + m.size];
       if(i === undefined) return;
-      if(m.age!==null && m.age<=12){
+      if(m.age!==null && m.age<=15){
         var bk = kidBand(m.age).key;
         (byBand[bk] = byBand[bk] || []).push(i);
       } else adIdx.push(i);
@@ -569,7 +579,7 @@ function renderGroups(){
     btn.addEventListener('click', function(){
       var gi = parseInt(btn.getAttribute('data-del'),10);
       groups.splice(gi,1);
-      if(!groups.length){ $('stats').classList.add('hide'); $('teams').classList.add('hide'); $('resultPanel').classList.add('hide'); $('gamePanel').classList.add('hide'); $('configPanel').classList.add('hide'); rosters=null; assignedGids={}; }
+      if(!groups.length){ $('stats').classList.add('hide'); $('teams').classList.add('hide'); $('resultPanel').classList.add('hide'); $('gamePanel').classList.add('hide'); $('configPanel').classList.add('hide'); $('divPanel').classList.add('hide'); rosters=null; assignedGids={}; }
       renderAll();
     });
   });
@@ -585,7 +595,7 @@ function flipTeam(gi){
 }
 
 function renderAll(){
-  renderStats(); renderGroups();
+  renderStats(); renderGroups(); renderDivisions();
   $('stats').classList.remove('hide'); $('teams').classList.remove('hide');
   $('resultPanel').classList.remove('hide'); $('gamePanel').classList.remove('hide');
   $('configPanel').classList.remove('hide');
@@ -603,7 +613,7 @@ function renderConfig(){
     return '<tr><td>'+g.no+' '+esc(g.name)+(g.maleOnly?' <span style="color:#B33021; font-weight:900">남자 전용</span>':'')+'</td>' +
       '<td><input type="number" min="2" max="400" data-cfg="quota" data-gi="'+gi+'" value="'+g.quota+'" style="width:84px">명</td>' +
       '<td><input type="number" min="0" max="200" data-cfg="kid" data-gi="'+gi+'" value="'+(g.kid||0)+'" style="width:84px">명</td>' +
-      '<td>어린이 <input type="number" min="3" max="12" data-cfg="kmin" data-gi="'+gi+'" value="'+(g.kmin||3)+'" style="width:52px"> ~ <input type="number" min="3" max="12" data-cfg="kmax" data-gi="'+gi+'" value="'+(g.kmax||12)+'" style="width:52px">세 · 어른 '+(g.quota-(g.kid||0))+'명</td></tr>';
+      '<td>어린이 <input type="number" min="3" max="12" data-cfg="kmin" data-gi="'+gi+'" value="'+(g.kmin||3)+'" style="width:52px"> ~ <input type="number" min="3" max="15" data-cfg="kmax" data-gi="'+gi+'" value="'+(g.kmax||15)+'" style="width:52px">세 · 어른 '+(g.quota-(g.kid||0))+'명</td></tr>';
   }).join('');
   $('cfgRows').innerHTML = rows;
   Array.prototype.forEach.call(document.querySelectorAll('[data-cfg]'), function(inp){
@@ -628,7 +638,38 @@ function renderConfig(){
 }
 
 /* ---------- 게임 배정 렌더 ---------- */
-var lastPpl = null, gameMode = 'game';
+var lastPpl = null, gameMode = 'game', divMode = 'single';
+var DIVS = [
+ {key:'u', label:'유아부 (3–5)', max:5},
+ {key:'e', label:'초등부 (6–12)', max:12},
+ {key:'m', label:'중등부 (13–15)', max:15},
+ {key:'h', label:'고등부 (16–18)', max:18},
+ {key:'a', label:'어른부 (19+)', max:200}
+];
+function divisionOf(m){
+  var a = m.age===null ? 40 : m.age;
+  for(var i=0;i<DIVS.length;i++){ if(a <= DIVS[i].max) return DIVS[i]; }
+  return DIVS[4];
+}
+function renderDivisions(){
+  if(divMode !== 'div'){ $('divPanel').classList.add('hide'); return; }
+  var agg = {};
+  groups.forEach(function(g){
+    g.members.forEach(function(m){
+      var dv = divisionOf(m);
+      if(!agg[dv.key]) agg[dv.key] = {label:dv.label, b:0, w:0};
+      if(g.team==='b') agg[dv.key].b++; else agg[dv.key].w++;
+    });
+  });
+  var rows = DIVS.filter(function(d){ return agg[d.key]; }).map(function(d){
+    var a = agg[d.key];
+    var lead = a.b===a.w ? '균형' : (a.b>a.w ? '청 우세' : '백 우세');
+    return '<tr><td><b>'+d.label+'</b></td><td class="tb b">'+a.b+'</td><td class="tb w">'+a.w+'</td><td>'+lead+'</td></tr>';
+  }).join('');
+  $('divTable').innerHTML = '<table class="roster"><thead><tr><th>연령부</th><th>청팀</th><th>백팀</th><th>현황</th></tr></thead><tbody>'+rows+'</tbody></table>' +
+    '<p class="hint">부별 모드 — 팀 배정은 가족 단위(청/백) 그대로 유지되고, 전적·시상이 연령부별로 집계됩니다. 부별 우승은 당일 경기 승점으로 발표합니다 · 경기 배정은 나이대별 슬롯이라 부별로 자연스럽게 묶입니다.</p>';
+  $('divPanel').classList.remove('hide');
+}
 function renderGames(){
   if(!lastPpl) return;
   var v = $('gameView'), html = '';
@@ -683,7 +724,7 @@ function runTeamFull(){
   groups.forEach(function(g){ g.team = null; });
   autoAssign(null);
   renderAll();
-  reportParse(r, '팀 배정 완료');
+  reportParse(r, divMode==='div' ? '팀 배정 완료 (부별 모드)' : '팀 배정 완료');
   document.getElementById('resultPanel').scrollIntoView({behavior:'smooth', block:'start'});
 }
 function reportParse(r, prefix){
@@ -764,7 +805,7 @@ $('clearBtn').addEventListener('click', function(){
   $('rawInput').value=''; groups=[]; gidSeq=1; assignedGids={}; rosters=null; lastPpl=null;
   $('status').textContent=''; $('warnline').style.display='none';
   $('stats').classList.add('hide'); $('teams').classList.add('hide');
-  $('resultPanel').classList.add('hide'); $('gamePanel').classList.add('hide'); $('configPanel').classList.add('hide');
+  $('resultPanel').classList.add('hide'); $('gamePanel').classList.add('hide'); $('configPanel').classList.add('hide'); $('divPanel').classList.add('hide');
 });
 
 $('gameBtn').addEventListener('click', function(){
@@ -781,6 +822,10 @@ $('gameReset').addEventListener('click', function(){
 
 Array.prototype.forEach.call(document.querySelectorAll('input[name=gv]'), function(radio){
   radio.addEventListener('change', function(){ gameMode = this.value; renderGames(); });
+});
+
+Array.prototype.forEach.call(document.querySelectorAll('input[name=dm]'), function(radio){
+  radio.addEventListener('change', function(){ divMode = this.value; renderDivisions(); });
 });
 
 $('copyBtn').addEventListener('click', function(){
@@ -874,9 +919,24 @@ function sheetExportText(){
 
 function exportText(){
   var b = teamStats('b'), w = teamStats('w');
-  var L = ['【한마음 큰 잔치 — 팀 배정표】',
-    '청팀 '+b.total+'명 (어린이 '+b.kid+' · 청소년 '+b.teen+' · 성인 '+b.adult+' · 어르신 '+b.senior+')',
-    '백팀 '+w.total+'명 (어린이 '+w.kid+' · 청소년 '+w.teen+' · 성인 '+w.adult+' · 어르신 '+w.senior+')',''];
+  var L;
+  if(divMode === 'div'){
+    L = ['【한마음 큰 잔치 — 팀 배정표 (부별 모드)】'];
+    var agg = {};
+    groups.forEach(function(g){
+      g.members.forEach(function(m){
+        var dv = divisionOf(m);
+        if(!agg[dv.key]) agg[dv.key] = {label:dv.label, b:0, w:0};
+        if(g.team==='b') agg[dv.key].b++; else agg[dv.key].w++;
+      });
+    });
+    DIVS.forEach(function(d){ if(agg[d.key]) L.push(d.label+': 청 '+agg[d.key].b+' vs 백 '+agg[d.key].w); });
+    L.push('');
+  } else {
+    L = ['【한마음 큰 잔치 — 팀 배정표】',
+      '청팀 '+b.total+'명 (어린이 '+b.kid+' · 청소년 '+b.teen+' · 성인 '+b.adult+' · 어르신 '+b.senior+')',
+      '백팀 '+w.total+'명 (어린이 '+w.kid+' · 청소년 '+w.teen+' · 성인 '+w.adult+' · 어르신 '+w.senior+')',''];
+  }
   groups.forEach(function(g, gi){
     L.push('G'+String(gi+1).padStart(2,'0')+' ['+(g.team==='b'?'청':'백')+'] '+g.rep+' ('+g.members.length+'명'+(g.tel?', '+g.tel:'')+')');
     g.members.forEach(function(m,i){
