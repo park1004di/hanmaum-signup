@@ -45,7 +45,7 @@
   .badge{font-size:12px;font-weight:900;padding:3px 10px;border-radius:999px;background:var(--blue);color:#fff}
   .badge.kid{background:var(--gold);color:#5A3E06}
   .p-grid{display:grid;gap:10px;margin-top:10px}
-  @media(min-width:640px){.p-grid{grid-template-columns:1.4fr .7fr .9fr}}
+  @media(min-width:640px){.p-grid{grid-template-columns:1.3fr .6fr .7fr .8fr}}
   .rm{position:absolute;right:12px;top:12px;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:var(--err);font-size:16px;font-weight:700;cursor:pointer;line-height:1}
   .adder{display:flex;flex-wrap:wrap;gap:9px}
   .adder button{border:1.5px dashed rgba(16,30,56,.35);background:#FFFDF8;border-radius:10px;padding:10px 15px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;color:var(--sub)}
@@ -206,6 +206,7 @@ function renderRoster(){
       '<div class="p-grid">' +
       '<div><label>이름 <span class="req">*</span></label><input type="text" data-f="name" value="' + esc(p.name||'') + '"></div>' +
       '<div><label>나이 <span class="req">*</span></label><input type="number" min="0" max="120" data-f="age" value="' + (p.age===null||p.age===undefined ? '' : p.age) + '"></div>' +
+      '<div><label>성별 <span class="req">*</span></label><select data-f="gender"><option value=""></option><option value="m"'+(p.gender==='m'?' selected':'')+'>남</option><option value="f"'+(p.gender==='f'?' selected':'')+'>여</option></select></div>' +
       '<div><label>티셔츠 <span class="req">*</span></label><select data-f="size">' + SIZES.map(function(x){ return '<option' + (p.size===x?' selected':'') + '>' + x + '</option>'; }).join('') + '</select></div>' +
       '</div>';
     if(i > 0) row.querySelector('.rm').addEventListener('click', function(){ people.splice(i,1); renderRoster(); });
@@ -214,6 +215,7 @@ function renderRoster(){
         var f = inp.getAttribute('data-f');
         if(f==='name') people[i].name = inp.value;
         if(f==='age') people[i].age = inp.value==='' ? null : parseInt(inp.value,10);
+        if(f==='gender') people[i].gender = inp.value;
         if(f==='size') people[i].size = inp.value;
       });
       inp.addEventListener('change', function(){ renderRoster(); });
@@ -230,7 +232,7 @@ $('saveBtn').addEventListener('click', async function(){
   var st = $('saveStatus'); st.textContent = '';
   var errs = [];
   people.forEach(function(p, i){
-    if(!String(p.name||'').trim() || p.age===null || p.age===undefined || isNaN(p.age) || !p.size) errs.push((i+1)+'번 참가자의 이름·나이·사이즈');
+    if(!String(p.name||'').trim() || p.age===null || p.age===undefined || isNaN(p.age) || !p.size || !p.gender) errs.push((i+1)+'번 참가자의 이름·나이·성별·사이즈');
   });
   if(people.length > 10) errs.push('한 번의 신청은 최대 10명');
   if(!$('editRep').value.trim() || !$('editTel').value.trim()) errs.push('신청자 이름·연락처');
@@ -245,7 +247,7 @@ $('saveBtn').addEventListener('click', async function(){
   function rosterString(){
     return people.map(function(p, i){
       var kid = p.age !== null && p.age <= 12;
-      var kind = (kid ? '어린이' : '어른') + (i===0 ? '·신청자' : '') + (p.friend ? '·미얀마친구' : '');
+      var kind = (kid ? '어린이' : '어른') + (p.gender==='m'?'·남':(p.gender==='f'?'·여':'')) + (i===0 ? '·신청자' : '') + (p.friend ? '·미얀마친구' : '');
       return (i+1)+'. '+String(p.name).trim()+'('+kind+', '+p.age+'세, '+p.size+')';
     }).join(' / ');
   }
@@ -275,6 +277,5 @@ $('saveBtn').addEventListener('click', async function(){
   }
 });
 </script>
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 </body>
 </html>

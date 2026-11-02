@@ -82,7 +82,7 @@
   .badge.kid{background:var(--gold);color:#5A3E06}
   .badge.friend{background:var(--green)}
   .p-grid{display:grid;gap:10px}
-  @media(min-width:640px){.p-grid{grid-template-columns:1.4fr .7fr .9fr}}
+  @media(min-width:640px){.p-grid{grid-template-columns:1.3fr .6fr .7fr .8fr}}
   .p-grid label{margin-bottom:4px}
   .rm{position:absolute;right:12px;top:38px;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line);
     background:#fff;color:var(--err);font-size:16px;font-weight:700;cursor:pointer;line-height:1}
@@ -239,6 +239,8 @@
     <div class="sumbar" aria-live="polite">
       <span class="t">LIVE SUMMARY · 현재 명단</span>
       <span>어른 <b id="sumAdult">1</b>명</span>
+      <span>남 <b id="sumM">0</b>명</span>
+      <span>여 <b id="sumF">0</b>명</span>
       <span class="kids">어린이 <b id="sumKid">0</b>명</span>
       <span class="tot">합계 <b id="sumAll">1</b>명</span>
     </div>
@@ -276,7 +278,7 @@
   </main>
 
   <footer>
-    <b>주최 · 미얀마 한인회 (Korean Association of Myanmar)</b> <span class="en" style="color:#B07A12">· 폼 v26.11.02-4</span><br>
+    <b>주최 · 미얀마 한인회 (Korean Association of Myanmar)</b> <span class="en" style="color:#B07A12">· 폼 v26.11.02-5</span><br>
     2026 한마음 큰 잔치 · HANMAUM ONE-HEART FESTIVAL 2026 — 문의는 신청자 연락처로 담당자가 드립니다.
   </footer>
 </div>
@@ -308,7 +310,7 @@ var SECRET = "hanmaum2026"; // Apps Script 코드의 SECRET과 똑같이 유지
 
   function addPerson(role, defaultAge){
     if(people.length >= MAX){ alert('최대 10명까지 등록할 수 있습니다.'); return; }
-    people.push({name:'', age:(defaultAge!=null ? String(defaultAge) : ''), size:'', role: role||'adult'});
+    people.push({name:'', age:(defaultAge!=null ? String(defaultAge) : ''), size:'', gender:'', role: role||'adult'});
     render();
   }
 
@@ -357,6 +359,14 @@ var SECRET = "hanmaum2026"; // Apps Script 코드의 SECRET과 똑같이 유지
       c2.appendChild(a);
       g.appendChild(c2);
 
+      var c3g = el('div');
+      c3g.appendChild(el('label',null,'성별 <span class="req">*</span>'));
+      var gs = document.createElement('select');
+      gs.innerHTML = '<option value="">선택</option><option value="m"'+(p.gender==='m'?' selected':'')+'>남</option><option value="f"'+(p.gender==='f'?' selected':'')+'>여</option>';
+      gs.addEventListener('change', function(){ p.gender=gs.value; syncBadge(row, i); });
+      c3g.appendChild(gs);
+      g.appendChild(c3g);
+
       var c3 = el('div');
       c3.appendChild(el('label',null,'티셔츠 사이즈 <span class="req">*</span>'));
       var s = document.createElement('select');
@@ -386,19 +396,22 @@ var SECRET = "hanmaum2026"; // Apps Script 코드의 SECRET과 똑같이 유지
   }
 
   function counts(){
-    var adults=0, kids=0;
+    var adults=0, kids=0, m=0, f=0;
     people.forEach(function(p){
       var a=parseInt(p.age,10);
+      if(p.gender==='m') m++; else if(p.gender==='f') f++;
       if(p.age===''||isNaN(a)) return;
       if(a<=12) kids++; else adults++;
     });
-    return {a:adults, k:kids};
+    return {a:adults, k:kids, m:m, f:f};
   }
 
   function sync(){
     var c = counts();
     document.getElementById('sumAdult').textContent = c.a;
     document.getElementById('sumKid').textContent = c.k;
+    document.getElementById('sumM').textContent = c.m;
+    document.getElementById('sumF').textContent = c.f;
     document.getElementById('sumAll').textContent = c.a + c.k;
   }
 
@@ -423,14 +436,16 @@ var SECRET = "hanmaum2026"; // Apps Script 코드의 SECRET과 똑같이 유지
       var bad = [];
       if(!p.name.trim()) bad.push(inputs[0]);
       if(p.age===''||parseInt(p.age,10)<0||parseInt(p.age,10)>120) bad.push(inputs[1]);
-      if(!p.size) bad.push(inputs[2]);
+      if(!p.gender) bad.push(inputs[2]);
+      if(!p.size) bad.push(inputs[3]);
       inputs.forEach(function(x){ x.classList.remove('bad'); });
       bad.forEach(function(x){ x.classList.add('bad'); });
       if(bad.length){
         var parts=[];
         if(bad.indexOf(inputs[0])>-1) parts.push('이름');
         if(bad.indexOf(inputs[1])>-1) parts.push('나이');
-        if(bad.indexOf(inputs[2])>-1) parts.push('티셔츠 사이즈');
+        if(bad.indexOf(inputs[2])>-1) parts.push('성별');
+        if(bad.indexOf(inputs[3])>-1) parts.push('티셔츠 사이즈');
         errs.push((i+1)+'번 참가자의 '+parts.join(' · ')+' 을(를) 확인해 주세요.');
       }
     });
@@ -460,6 +475,7 @@ var SECRET = "hanmaum2026"; // Apps Script 코드의 SECRET과 똑같이 유지
     lines.push('— 참가자 명단 —');
     people.forEach(function(p,i){
       var kind = ageIsKid(p) ? '어린이' : '어른';
+      kind += p.gender==='m' ? '·남' : (p.gender==='f' ? '·여' : '');
       if(i===0) kind += ' · 신청자';
       else if(p.role==='friend') kind += ' · 미얀마 친구';
       lines.push((i+1) + '. ' + p.name.trim() + ' (' + kind + ', 나이 ' + p.age + ', 티셔츠 ' + p.size + ')');
@@ -478,6 +494,7 @@ var SECRET = "hanmaum2026"; // Apps Script 코드의 SECRET과 똑같이 유지
   function rosterString(){
     return people.map(function(p,i){
       var kind = ageIsKid(p) ? '어린이' : '어른';
+      kind += p.gender==='m' ? '·남' : (p.gender==='f' ? '·여' : '');
       if(i===0) kind += '·신청자';
       else if(p.role==='friend') kind += '·미얀마친구';
       return (i+1)+'. '+p.name.trim()+'('+kind+', '+p.age+'세, '+p.size+')';
@@ -485,7 +502,7 @@ var SECRET = "hanmaum2026"; // Apps Script 코드의 SECRET과 똑같이 유지
   }
   function membersJson(){
     return JSON.stringify(people.map(function(p,i){
-      return {name:p.name.trim(), age:(p.age===''?null:parseInt(p.age,10)), size:p.size,
+      return {name:p.name.trim(), age:(p.age===''?null:parseInt(p.age,10)), size:p.size, gender:p.gender,
               friend:(i>0 && p.role==='friend'), owner:(i===0)};
     }));
   }
@@ -637,6 +654,5 @@ var SECRET = "hanmaum2026"; // Apps Script 코드의 SECRET과 똑같이 유지
   addPerson('adult'); // 첫 행 = 본인
 })();
 </script>
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 </body>
 </html>
