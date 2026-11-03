@@ -248,7 +248,7 @@ var BAND_LABEL = {kid:'어린이(≤15)', teen:'청소년(13–18)', adult:'성�
 var GAMES = [
  {no:'①', name:'슬리퍼 멀리 차기',      quota:10, kid:6,  adult:4,  time:'13:30~13:42', kmin:3, kmax:6},
  {no:'②', name:'기마전',               quota:32, kid:8,  adult:24, time:'13:47~14:02', kmin:6, kmax:15},
- {no:'③', name:'사람 찾기 & 2인 3각',   quota:14, kid:7,  adult:7,  time:'14:07~14:19', kmin:6, kmax:15},
+ {no:'③', name:'사람 찾기 & 2인 3각',   quota:16, kid:8,  adult:8,  time:'14:07~14:19', kmin:6, kmax:15},
  {no:'④', name:'어린이 부활 피구',      quota:20, kid:20, adult:0,  time:'14:24~14:39', kmin:3, kmax:15, squad:true}, // 청·백 나눠 보여주기
  {no:'⑤', name:'쌀가마니 오래 들기',    quota:20, kid:0,  adult:20, time:'14:44~14:56', maleOnly:true, squad:true}, // 청·백 나눠 보여주기
  {no:'⑥', name:'장애물 계주 (어린이)',   quota:14, kid:14, adult:0,  time:'15:01~15:13', kmin:3, kmax:15, squad:true},
@@ -733,7 +733,7 @@ function assignGames(mode){
         var cb = rs.filter(function(x){ return x.team==='b' && !x.p.isKid; });
         var cw = rs.filter(function(x){ return x.team==='w' && !x.p.isKid; });
         numSquad(cb, '청팀', 3); numSquad(cw, '백팀', 3);
-        rs.forEach(function(x){ if(x.p.isKid) x.squad = (x.team==='b'?'청팀':'백팀') + '탑'; });
+        rs.forEach(function(x, i2){ if(x.p.isKid) x.squad = (x.team==='b'?'청팀':'백팀') + '탑' + (Math.floor(i2/4)+1) + '조'; });
       } else if(g.name.indexOf('사람 찾기') > -1 || g.name.indexOf('2인 3각') > -1){
         ['b','w'].forEach(function(team){
           var tn = team==='b' ? '청팀' : '백팀';
@@ -760,19 +760,21 @@ function assignGames(mode){
       b: rs.filter(function(x){ return x.team==='b'; }).length,
       w: rs.filter(function(x){ return x.team==='w'; }).length }; }
     var c = rc(); var guard = 0;
+    var strict = !g.squad;   // 조 편성 경기(기마전·2인3각 등)는 가족 응집 우선, 나머지는 팀 균형 우선
     while(c.b !== c.w && guard < 40){
       guard++;
       var over = c.b > c.w ? 'b' : 'w';
       var under = over==='b' ? 'w' : 'b';
       var moved = false;
-      // 1인 이동 (가족 분열 회피: 가족이 과다 쪽에 2명 이상일 때만)
       for(var k2=0; k2<rs.length; k2++){
         var x = rs[k2];
         if(x.team !== over) continue;
         var famOver = rs.filter(function(y){ return y.p.gid===x.p.gid && y.team===over; }).length;
         var famUnder = rs.filter(function(y){ return y.p.gid===x.p.gid && y.team===under; }).length;
-        if(famUnder > 0) continue;       // 가족 분열 방지
-        if(famOver < 2) continue;         // 혼자 남는 가족원 방지
+        if(strict){
+          if(famUnder > 0) continue;
+          if(famOver < 2) continue;
+        }
         x.team = under; c = rc(); moved = true; break;
       }
       if(!moved) break;
@@ -950,9 +952,11 @@ function renderGames(){
         return;
       }
       var n = rosters[gi].length, short = g.quota - n;
+      var realB = rosters[gi].filter(function(x){ return x.team==='b'; }).length;
+      var realW = n - realB;
       html += '<div class="gcard"><div class="g-head2"><span class="g-name2">'+g.no+' '+esc(g.name)+
         '<span class="t">'+g.time+'</span></span><span class="g-count">배정 <span class="'+(short>0?'short">':'ok">')+n+'</span>/'+g.quota+'명'+
-        ' · 청 '+sideCnt[gi].b+' vs 백 '+sideCnt[gi].w+'</span></div>';
+        ' · 청 '+realB+' vs 백 '+realW+'</span></div>';
       if(n){
         html += '<div class="gbody"><table class="gtable">';
         var sorted = rosters[gi].slice().sort(function(a2,b2){
@@ -984,6 +988,7 @@ function renderGames(){
       GAMES.forEach(function(g2, gi2){ if(isAllGame(gi2)) mine.push(g2.no+' '+g2.name); });
       var chipStyle = p.team==='b' ? 'background:#E4EEFB;color:#174a8c' : 'background:#FBE4E1;color:#B33021';
       html += '<div class="pv"><b>'+esc(m.name)+'</b><span class="pchip" style="'+chipStyle+'">'+(p.team==='b'?'청팀':'백팀')+'</span>' +
+        '<span class="pchip">'+(m.age===null?'나이확인':m.age+'세')+'</span>' +
         mine.map(function(x){ return '<span class="pchip">'+esc(x)+'</span>'; }).join('') + '</div>';
     });
   }
