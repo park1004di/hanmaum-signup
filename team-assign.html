@@ -1147,6 +1147,30 @@ function applyGameMeta(){
   });
 }
 
+
+/* ===== 운영자 잠금 복구 ===== */
+(function(){
+  var PW = 'hanmaum1128';
+  var lock = document.getElementById('lock');
+  var pw = document.getElementById('lockPw');
+  var btn = document.getElementById('lockBtn');
+  var err = document.getElementById('lockErr');
+  if(!lock || !pw || !btn) return;
+  function tryUnlock(){
+    if(pw.value === PW){
+      try{ sessionStorage.setItem('hm_op', '1'); }catch(e){}
+      lock.style.display = 'none';
+    } else {
+      err.textContent = '비밀번호가 틀렸습니다 — 운영자 비밀번호를 다시 입력해 주세요.';
+      pw.value = '';
+      try{ pw.focus(); }catch(e){}
+    }
+  }
+  btn.addEventListener('click', tryUnlock);
+  pw.addEventListener('keydown', function(e){ if(e.key === 'Enter') tryUnlock(); });
+  try{ if(sessionStorage.getItem('hm_op') === '1') lock.style.display = 'none'; }catch(e){}
+})();
+
 /* ===== assignGames 래퍼 — 라벨·정렬 실행 보장 ===== */
 (function(){
   var orig = assignGames;
