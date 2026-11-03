@@ -713,7 +713,9 @@ function renderDivisions(){
 function renderGames(){
   try{ applyGameMeta(); }catch(e){}
   if(!lastPpl) return;
-  var v = $('gameView'), html = '';
+  var v = $('gameView');
+  if(!v) return;
+  var html = '';
   if(gameMode==='game'){
     GAMES.forEach(function(g, gi){
       if(isAllGame(gi)){
@@ -890,6 +892,7 @@ var DIVS = [
 
 
 var lastPpl = null, gameMode = 'game', divMode = 'single';
+var rosters = null, sideCnt = null, gameCount = null;
 
 
 /* ===== 기마전 조탑 라벨 + 경기별 정렬 (신규 추가) ===== */
@@ -1233,16 +1236,37 @@ $('clearBtn').addEventListener('click', function(){
 });
 
 $('gameBtn').addEventListener('click', function(){
-  if(!groups.length){ $('status').innerHTML = '<span class="bad">먼저 팀 배정을 실행해 주세요.</span>'; return; }
-  lastPpl = assignGames(rosters ? 'incremental' : 'full');
-  renderGames();
-  if(rosters) $('gamePanel').classList.remove('hide');
+  var gs = document.getElementById('gameStatus');
+  if(!gs){
+    gs = document.createElement('div');
+    gs.id = 'gameStatus';
+    gs.style.cssText = 'margin:10px 0;font-weight:800;font-size:14.5px';
+    var gp = document.getElementById('gamePanel');
+    if(gp && gp.parentNode) gp.parentNode.insertBefore(gs, gp);
+  }
+  try{
+    if(!groups.length){
+      gs.innerHTML = '<span style="color:#B33021">먼저 위에서 [자동 배정 실행 (팀)] 버튼을 눌러 주세요.</span>';
+      $('status').innerHTML = '<span class="bad">먼저 팀 배정을 실행해 주세요.</span>';
+      return;
+    }
+    lastPpl = assignGames(rosters ? 'incremental' : 'full');
+    renderGames();
+    if(rosters){ $('gamePanel').classList.remove('hide'); }
+    var tot = 0; rosters.forEach(function(rs){ tot += rs.length; });
+    gs.innerHTML = '<span style="color:#2E7D5B">게임 배정 완료 — 총 ' + tot + '명 배정</span> <span style="font-weight:500">(아래 경기별 명단 확인 · 정원 미달은 현장 모집)</span>';
+  } catch(e){
+    gs.innerHTML = '<span style="color:#B33021">게임 배정 중 오류: ' + esc(String(e && e.message || e)) + '</span>';
+    if(window.console) console.error(e);
+  }
 });
 
 $('gameReset').addEventListener('click', function(){
+  try{
   if(!groups.length){ $('status').innerHTML = '<span class="bad">먼저 팀 배정을 실행해 주세요.</span>'; return; }
   lastPpl = assignGames('full');
   renderGames();
+  }catch(e){ if(window.console) console.error(e); $('status').innerHTML = '<span class="bad">게임 재배정 오류: '+esc(String(e&&e.message||e))+'</span>'; }
 });
 
 Array.prototype.forEach.call(document.querySelectorAll('input[name=gv]'), function(radio){
