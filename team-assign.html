@@ -1164,6 +1164,167 @@ function applyGameMeta(){
 })();
 
 
+
+/* ===== 버튼 리스너 복원 (fullI0 기준) ===== */
+$('runBtn').addEventListener('click', runTeamFull);
+
+$('reAuto').addEventListener('click', function(){
+  groups.forEach(function(g){ g.team = null; });
+  autoAssign(null);
+  renderAll();
+});
+
+$('addBtn').addEventListener('click', function(){
+  var raw = $('addInput').value;
+  if(!raw.trim()){ $('status').innerHTML = '<span class="bad">추가 신청 내용을 붙여넣어 주세요.</span>'; return; }
+  var r = parseAny(raw, groups.length);
+  if(!r.groups.length){ reportParse(r, '새로 배정할 신청 없음'); return; }
+  var have = {};
+  groups.forEach(function(g){ if(g.receipt) have[g.receipt] = g; });
+  var fresh = [], skipped = 0, updated = 0;
+  r.groups.forEach(function(g){
+    var prev = g.receipt ? have[g.receipt] : null;
+    if(prev){
+      if(prev.fingerprint === g.fingerprint){ skipped++; return; } // 같은 내용 — 제외
+      // 수정된 신청: 기존 경기 배정을 빼고 그룹을 교체(팀 유지) → 새 사람처럼 재배정
+      removeFromRosters(prev);
+      g.team = prev.team; g.gid = prev.gid;
+      groups[groups.indexOf(prev)] = g;
+      updated++;
+      return;
+    }
+    if(g.receipt) have[g.receipt] = true;
+    fresh.push(g);
+  });
+  if(!fresh.length && !updated){
+    reportParse(r, '새로 배정할 신청 없음 — 기존 '+skipped+'건은 접수번호 중복으로 자동 제외했습니다');
+    $('addInput').value = '';
+    return;
+  }
+  var firstRun = !groups.length && !updated;
+  groups = groups.concat(fresh);
+  if(firstRun) autoAssign(null);
+  else autoAssign(fresh);
+  var addedN = fresh.concat(updated).reduce(function(a,g){ return a+g.members.length; },0);
+  if(rosters){
+    assignGames('incremental'); // 기존 배정 유지 + 신규·수정분만 빈자리에
+    $('status').innerHTML = '<span class="good">추가 배정 완료 — 새 신청 '+fresh.length+'건 · 수정 재배정 '+updated+'건 (합계 '+addedN+'명)</span>' +
+      ' · 기존 나머지는 팀·경기 그대로 유지' +
+      (skipped ? ' · 중복 '+skipped+'건 자동 제외' : '');
+  } else {
+    $('status').innerHTML = '<span class="good">팀 배정 완료 — 새 신청 '+fresh.length+'건 · 수정 '+updated+'건 (합계 '+addedN+'명)</span>' +
+      ' · 「게임 배정 실행」을 누르면 경기도 배정됩니다' +
+      (skipped ? ' · 중복 '+skipped+'건 자동 제외' : '');
+  }
+  reportParse(r, '');
+  $('addInput').value = '';
+  renderAll();
+  if(lastPpl) renderGames();
+  document.getElementById('resultPanel').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+$('addClear').addEventListener('click', function(){ $('addInput').value=''; });
+
+$('clearBtn').addEventListener('click', function(){
+  $('rawInput').value=''; groups=[]; gidSeq=1; assignedGids={}; rosters=null; lastPpl=null;
+  $('status').textContent=''; $('warnline').style.display='none';
+  $('stats').classList.add('hide'); $('teams').classList.add('hide');
+  $('resultPanel').classList.add('hide'); $('gamePanel').classList.add('hide'); $('configPanel').classList.add('hide'); $('divPanel').classList.add('hide');
+});
+
+$('gameBtn').addEventListener('click', function(){
+  if(!groups.length){ $('status').innerHTML = '<span class="bad">먼저 팀 배정을 실행해 주세요.</span>'; return; }
+  lastPpl = assignGames(rosters ? 'incremental' : 'full');
+  renderGames();
+  if(rosters) $('gamePanel').classList.remove('hide');
+});
+
+$('gameReset').addEventListener('click', function(){
+  if(!groups.length){ $('status').innerHTML = '<span class="bad">먼저 팀 배정을 실행해 주세요.</span>'; return; }
+  lastPpl = assignGames('full');
+  renderGames();
+});
+
+Array.prototype.forEach.call(document.querySelectorAll('input[name=gv]'), function(radio){
+  radio.addEventListener('change', function(){ gameMode = this.value; renderGames(); });
+});
+
+Array.prototype.forEach.call(document.querySelectorAll('input[name=dm]'), function(radio){
+  radio.addEventListener('change', function(){ divMode = this.value; renderDivisions(); });
+});
+
+$('copyBtn').addEventListener('click', function(){
+  var t = exportText();
+  var btn = this;
+  function ok(){ btn.textContent='복사 완료 ✓'; setTimeout(function(){ btn.textContent='팀 배정표 복사'; }, 1800); }
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, legacy);
+  else legacy();
+  function legacy(){
+    var ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta);
+    ta.select(); try{ document.execCommand('copy'); ok(); }catch(e){ alert('복사 실패 — 텍스트를 직접 선택해 주세요.'); }
+    document.body.removeChild(ta);
+  }
+});
+
+$('sheetCopyBtn').addEventListener('click', function(){
+  var t = sheetExportText(), btn = this;
+  function ok(){ btn.textContent='복사 완료 ✓ — 접수 대장에 붙여넣으세요'; setTimeout(function(){ btn.textContent='구글 시트용 복사'; }, 2200); }
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, legacy);
+  else legacy();
+  function legacy(){
+    var ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta);
+    ta.select(); try{ document.execCommand('copy'); ok(); }catch(e){ alert('복사 실패 — 텍스트를 직접 선택해 주세요.'); }
+    document.body.removeChild(ta);
+  }
+});
+
+$('gameCopy').addEventListener('click', function(){
+  var t = gameExportText();
+  var btn = this;
+  function ok(){ btn.textContent='복사 완료 ✓'; setTimeout(function(){ btn.textContent='게임 배정표 복사'; }, 1800); }
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, legacy);
+  else legacy();
+  function legacy(){
+    var ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta);
+    ta.select(); try{ document.execCommand('copy'); ok(); }catch(e){ alert('복사 실패 — 텍스트를 직접 선택해 주세요.'); }
+    document.body.removeChild(ta);
+  }
+});
+
+$('csvBtn').addEventListener('click', function(){
+  var rows = [['접수번호','신청자','이메일','연락처','이름','성별','나이','티셔츠','팀','게임','한인회비']];
+  groups.forEach(function(g, gi){
+    g.members.forEach(function(m, mi){
+      var games = '(게임 배정 전)';
+      if(lastPpl){
+        var i = idxGlobal(gi, mi);
+        games = GAMES.filter(function(gd, gi2){ return gd.quota!==0 && rosters[gi2].some(function(x){ return x.idx===i; }); })
+          .map(function(gd){ return gd.no; }).join(' ');
+        GAMES.forEach(function(g3, gi3){ if(isAllGame(gi3)) games += ' ' + g3.no; });
+      }
+      rows.push(['G'+String(gi+1).padStart(2,'0'), g.rep, g.email||'', g.tel, m.name,
+        m.gender==='m'?'남':(m.gender==='f'?'여':'?'), m.age===null?'':m.age, m.size,
+        g.team==='b'?'청팀':'백팀', games, g.fee]);
+    });
+  });
+  var csv = '\ufeff' + rows.map(function(r){ return r.map(function(c){ return '"'+String(c==null?'':c).replace(/"/g,'""')+'"'; }).join(','); }).join('\r\n');
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+  a.download = '한마음_팀배정표.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+});
+
+$('sampleBtn').addEventListener('click', function(){
+  $('rawInput').value = [
+'【2026 한마음 큰 잔치 참가 신청】\n신청자: 박찬수\n연락처: 09-770-111\n인원: 총 3명 (어른 2 · 어린이 1)\n한인회비 납부: 예\n— 참가자 명단 —\n1. 박찬수 (어른·남 · 신청자, 나이 48, 티셔츠 L)\n2. 박서연 (어린이·여, 나이 9, 티셔츠 Kids 130)\n3. Ko Ko (어른·남 · 미얀마 친구, 나이 30, 티셔츠 M)',
+'【2026 한마음 큰 잔치 참가 신청】\n신청자: 김미영\n연락처: 09-441-222\n인원: 총 4명 (어른 2 · 어린이 2)\n한인회비 납부: 예\n— 참가자 명단 —\n1. 김미영 (어른·남 · 신청자, 나이 41, 티셔츠 M)\n2. 정우진 (어른·남, 나이 44, 티셔츠 L)\n3. 정하윤 (어린이·여, 나이 11, 티셔츠 Kids 140)\n4. 정시우 (어린이·남, 나이 7, 티셔츠 Kids 120)',
+'【2026 한마음 큰 잔치 참가 신청】\n신청자: Aung Myat\n연락처: 09-333-333\n인원: 총 2명 (어른 2)\n한인회비 납부: 아니오\n— 참가자 명단 —\n1. Aung Myat (어른·남 · 신청자, 나이 35, 티셔츠 XL)\n2. Su Su (어른·여 · 미얀마 친구, 나이 28, 티셔츠 S)',
+'【2026 한마음 큰 잔치 참가 신청】\n신청자: 이광호\n연락처: 09-555-777\n인원: 총 5명 (어른 3 · 어린이 2)\n한인회비 납부: 예\n— 참가자 명단 —\n1. 이광호 (어른·남 · 신청자, 나이 52, 티셔츠 L)\n2. 최은주 (어른·남, 나이 49, 티셔츠 M)\n3. 이도현 (어린이·남, 나이 12, 티셔츠 Kids 140)\n4. 한예린 (어린이·여, 나이 8, 티셔츠 Kids 125)\n5. Kyaw Kyaw (어른·남 · 미얀마 친구, 나이 26, 티셔츠 M)',
+'【2026 한마음 큰 잔치 참가 신청】\n신청자: 최순자\n연락처: 09-222-888\n인원: 총 2명 (어른 2)\n한인회비 납부: 예\n— 참가자 명단 —\n1. 최순자 (어른·남 · 신청자, 나이 68, 티셔츠 M)\n2. 문상복 (어른·남, 나이 71, 티셔츠 L)',
+'【2026 한마음 큰 잔치 참가 신청】\n신청자: 정하늘\n연락처: 09-999-000\n인원: 총 3명 (어른 2 · 어린이 1)\n한인회비 납부: 아니오\n— 참가자 명단 —\n1. 정하늘 (어른·남 · 신청자, 나이 16, 티셔츠 S)\n2. 정지아 (어린이·여, 나이 10, 티셔츠 Kids 130)\n3. Thiri (어른·여 · 미얀마 친구, 나이 22, 티셔츠 S)'
+  ].join('\n\n');
+  $('runBtn').click();
+});
+
 /* ===== 운영자 잠금 (런타임 생성 — 이벤트 확실) ===== */
 (function(){
   var PW = 'hanmaum1128';
