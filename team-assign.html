@@ -238,14 +238,14 @@ var BAND_LABEL = {kid:'어린이(≤15)', teen:'청소년(13–18)', adult:'성�
 
 /* ================= 게임 구성 (덱 확정 기준 — 바꿀 때는 여기만 수정) ================= */
 var GAMES = [
- {no:'①', name:'슬리퍼 멀리 차기', quota:30, kid:15, adult:15, time:'13:30~13:42', kmin:3, kmax:6, squad:true},
- {no:'②', name:'기마전', quota:48, kid:12, adult:36, time:'13:47~14:02', kmin:6, kmax:15, squad:true},
- {no:'③', name:'공 컬링 (요가공)', quota:120, kid:72, adult:48, time:'14:07~14:19', kmin:3, kmax:15, squad:true},
+ {no:'①', name:'슬리퍼 멀리 차기', quota:20, kid:10, adult:10, time:'13:30~13:42', kmin:3, kmax:6, squad:true},
+ {no:'②', name:'기마전', quota:40, kid:10, adult:30, time:'13:47~14:02', kmin:6, kmax:15, squad:true},
+ {no:'③', name:'공 컬링 (요가공)', quota:100, kid:60, adult:40, time:'14:07~14:19', kmin:3, kmax:15, squad:true},
  {no:'④', name:'사람 찾기 & 2인 3각', quota:14, kid:14, adult:0, time:'14:24~14:39', kmin:4, kmax:10, squad:true},
- {no:'⑤', name:'어린이 부활 피구', quota:60, kid:60, adult:0, time:'14:44~14:56', kmin:3, kmax:15, squad:true},
- {no:'⑥', name:'쌀가마니 오래 들기', quota:60, kid:0, adult:60, time:'15:01~15:13', maleOnly:true, squad:true},
- {no:'⑦', name:'장애물 계주 (어린이)', quota:40, kid:40, adult:0, time:'15:18~15:38', kmin:3, kmax:15, squad:true},
- {no:'⑧', name:'줄다리기 3판제', quota:160, kid:80, adult:80, time:'15:43~15:56', tug:true, tugRounds:['어른전 30vs30','어린이전 30vs30','꿈의 대결 전원'], squad:true},
+ {no:'⑤', name:'어린이 부활 피구', quota:40, kid:40, adult:0, time:'14:44~14:56', kmin:3, kmax:15, squad:true},
+ {no:'⑥', name:'쌀가마니 오래 들기', quota:40, kid:0, adult:40, time:'15:01~15:13', maleOnly:true, squad:true},
+ {no:'⑦', name:'장애물 계주 (어린이)', quota:30, kid:30, adult:0, time:'15:18~15:38', kmin:3, kmax:15, squad:true},
+ {no:'⑧', name:'줄다리기 3판제', quota:144, kid:72, adult:72, time:'15:43~15:56', tug:true, tugRounds:['어른전 30vs30','어린이전 30vs30','꿈의 대결 전원'], squad:true},
  {no:'⑨', name:'박 터뜨리기 피날레', quota:0, kid:0, adult:0, time:'16:00~16:10'}
 ];
 var KID_GAME_CAP = 3; // 1인 최대 3종목
@@ -1107,7 +1107,7 @@ function normalizeTug(gi){
     ['b','w'].forEach(function(t){
       ['kid','adult'].forEach(function(bd){
         var have = countOf(t, bd);
-        var tgt = 40; /* 160명 정원 기준 라운드당 40명 */
+        var tgt = 36; /* 144명 정원 기준 라운드당 36명 */
         if(have < tgt) needs.push({t:t, bd:bd, need: tgt - have});
       });
     });

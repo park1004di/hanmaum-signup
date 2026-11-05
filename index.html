@@ -161,7 +161,7 @@
   <section class="notices" aria-label="참가 안내">
     <div class="notice n-blue"><b>청팀 vs 백팀 · 자동 배정</b><p>나이대 균형에 맞춰 자동 배정됩니다. 같이 온 가족·친구는 반드시 같은 팀입니다.</p></div>
     <div class="notice n-red"><b>어린이 보호자 동반 필수</b><p>어른 1명당 어린이(15세 이하) 최대 3명까지 동반 가능합니다. (어린이 단독 신청은 불가)</p></div>
-    <div class="notice n-green"><b>티셔츠 전원 증정</b><p>이름을 새긴 기념 티셔츠 — 신청 시 사이즈를 선택해 주세요.</p></div>
+    <div class="notice n-green"><b>기념 모자 전원 증정</b><p>행사 기념 모자 — 전원 참가자에게 증정합니다 (사이즈 선택 없음).</p></div>
     <div class="notice"><b>행운권 통합 추첨</b><p>입장 1장 + 경기 참가 시 1장. 경품 추첨은 한인회비 납부자에 한합니다.</p></div>
   </section>
 
@@ -231,7 +231,7 @@
       <div class="qcard">
         <label class="agree" id="consentWrap">
           <input type="checkbox" id="consent">
-          <span><b>개인정보 수집·이용 동의</b> — 입력한 이름·연락처·나이는 행사 운영(팀 배정, 티셔츠 제작, 비상 연락) 목적으로만 사용되며 행사 후 파기합니다.</span>
+          <span><b>개인정보 수집·이용 동의</b> — 입력한 이름·연락처·나이는 행사 운영(팀 배정, 기념 모자 제작, 비상 연락) 목적으로만 사용되며 행사 후 파기합니다.</span>
         </label>
       </div>
     </div>
@@ -368,11 +368,7 @@ var SECRET = "hanmaum2026"; // Apps Script 코드의 SECRET과 똑같이 유지
       g.appendChild(c3g);
 
       var c3 = el('div');
-      c3.appendChild(el('label',null,'티셔츠 사이즈 <span class="req">*</span>'));
-      var s = document.createElement('select');
-      s.innerHTML = '<option value="">사이즈 선택</option>' + SIZES.map(function(x){return '<option>'+x+'</option>';}).join('');
-      s.value = p.size; if(!p.size) s.selectedIndex=0;
-      s.addEventListener('change', function(){ p.size=s.value; });
+      
       c3.appendChild(s);
       g.appendChild(c3);
 
@@ -437,7 +433,7 @@ var SECRET = "hanmaum2026"; // Apps Script 코드의 SECRET과 똑같이 유지
       if(!p.name.trim()) bad.push(inputs[0]);
       if(p.age===''||parseInt(p.age,10)<0||parseInt(p.age,10)>120) bad.push(inputs[1]);
       if(!p.gender) bad.push(inputs[2]);
-      if(!p.size) bad.push(inputs[3]);
+      
       inputs.forEach(function(x){ x.classList.remove('bad'); });
       bad.forEach(function(x){ x.classList.add('bad'); });
       if(bad.length){
@@ -445,7 +441,7 @@ var SECRET = "hanmaum2026"; // Apps Script 코드의 SECRET과 똑같이 유지
         if(bad.indexOf(inputs[0])>-1) parts.push('이름');
         if(bad.indexOf(inputs[1])>-1) parts.push('나이');
         if(bad.indexOf(inputs[2])>-1) parts.push('성별');
-        if(bad.indexOf(inputs[3])>-1) parts.push('티셔츠 사이즈');
+        
         errs.push((i+1)+'번 참가자의 '+parts.join(' · ')+' 을(를) 확인해 주세요.');
       }
     });
@@ -478,7 +474,7 @@ var SECRET = "hanmaum2026"; // Apps Script 코드의 SECRET과 똑같이 유지
       kind += p.gender==='m' ? '·남' : (p.gender==='f' ? '·여' : '');
       if(i===0) kind += ' · 신청자';
       else if(p.role==='friend') kind += ' · 미얀마 친구';
-      lines.push((i+1) + '. ' + p.name.trim() + ' (' + kind + ', 나이 ' + p.age + ', 티셔츠 ' + p.size + ')');
+      lines.push((i+1) + '. ' + p.name.trim() + ' (' + kind + ', 나이 ' + p.age + ', 티셔츠 ' + (p.size || '미지정') + ')');
     });
     lines.push('접수일시: ' + new Date().toLocaleString('ko-KR'));
     return lines.join('\n');
@@ -497,7 +493,7 @@ var SECRET = "hanmaum2026"; // Apps Script 코드의 SECRET과 똑같이 유지
       kind += p.gender==='m' ? '·남' : (p.gender==='f' ? '·여' : '');
       if(i===0) kind += '·신청자';
       else if(p.role==='friend') kind += '·미얀마친구';
-      return (i+1)+'. '+p.name.trim()+'('+kind+', '+p.age+'세, '+p.size+')';
+      return (i+1)+'. '+p.name.trim()+'('+kind+', '+p.age+'세, 티셔츠 '+(p.size || '미지정')+')';
     }).join(' / ');
   }
   function membersJson(){

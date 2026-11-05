@@ -62,7 +62,7 @@
   <header>
     <p class="eyebrow en">EDIT MY REGISTRATION · 신청 내용 수정</p>
     <h1>신청 내용 수정</h1>
-    <p class="lede">접수 확인 메일에 안내된 <b>이메일과 비밀번호</b>로 로그인하면 내 신청을 직접 수정할 수 있습니다 — 이름·나이·티셔츠 사이즈, 인원 추가까지.</p>
+    <p class="lede">접수 확인 메일에 안내된 <b>이메일과 비밀번호</b>로 로그인하면 내 신청을 직접 수정할 수 있습니다 — 이름·나이, 인원 추가까지.</p>
   </header>
 
   <section class="panel" id="loginPanel">
@@ -207,7 +207,7 @@ function renderRoster(){
       '<div><label>이름 <span class="req">*</span></label><input type="text" data-f="name" value="' + esc(p.name||'') + '"></div>' +
       '<div><label>나이 <span class="req">*</span></label><input type="number" min="0" max="120" data-f="age" value="' + (p.age===null||p.age===undefined ? '' : p.age) + '"></div>' +
       '<div><label>성별 <span class="req">*</span></label><select data-f="gender"><option value=""></option><option value="m"'+(p.gender==='m'?' selected':'')+'>남</option><option value="f"'+(p.gender==='f'?' selected':'')+'>여</option></select></div>' +
-      '<div><label>티셔츠 <span class="req">*</span></label><select data-f="size">' + SIZES.map(function(x){ return '<option' + (p.size===x?' selected':'') + '>' + x + '</option>'; }).join('') + '</select></div>' +
+      '<div><label>티셔츠</label><select data-f="size">' + SIZES.map(function(x){ return '<option' + (p.size===x?' selected':'') + '>' + x + '</option>'; }).join('') + '</select></div>' +
       '</div>';
     if(i > 0) row.querySelector('.rm').addEventListener('click', function(){ people.splice(i,1); renderRoster(); });
     row.querySelectorAll('[data-f]').forEach(function(inp){
@@ -232,7 +232,7 @@ $('saveBtn').addEventListener('click', async function(){
   var st = $('saveStatus'); st.textContent = '';
   var errs = [];
   people.forEach(function(p, i){
-    if(!String(p.name||'').trim() || p.age===null || p.age===undefined || isNaN(p.age) || !p.size || !p.gender) errs.push((i+1)+'번 참가자의 이름·나이·성별·사이즈');
+    if(!String(p.name||'').trim() || p.age===null || p.age===undefined || isNaN(p.age) || !p.gender) errs.push((i+1)+'번 참가자의 이름·나이·성별');
   });
   if(people.length > 10) errs.push('한 번의 신청은 최대 10명');
   if(!$('editRep').value.trim() || !$('editTel').value.trim()) errs.push('신청자 이름·연락처');
@@ -248,7 +248,7 @@ $('saveBtn').addEventListener('click', async function(){
     return people.map(function(p, i){
       var kid = p.age !== null && p.age <= 15;
       var kind = (kid ? '어린이' : '어른') + (p.gender==='m'?'·남':(p.gender==='f'?'·여':'')) + (i===0 ? '·신청자' : '') + (p.friend ? '·미얀마친구' : '');
-      return (i+1)+'. '+String(p.name).trim()+'('+kind+', '+p.age+'세, '+p.size+')';
+      return (i+1)+'. '+String(p.name).trim()+'('+kind+', '+p.age+'세, 티셔츠 '+(p.size || '미지정')+')';
     }).join(' / ');
   }
   var payload = { secret:SECRET, action:'update', receipt:my.receipt, pwhash:myHash,
